@@ -55,6 +55,20 @@ namespace api.Controllers
         }
 
 
+        [HttpDelete]
+        [Route("{id:int}")]
+        public async Task<IActionResult> DeleteUser([FromRoute] int id)
+        {
+            var deletedUser = await _userRepo.DeleteUserAsync(id);
+            if (deletedUser == null)
+            {
+                return NotFound("User Not Found");
+            }
+
+            return NoContent();
+        }
+
+
 
     }
 }
