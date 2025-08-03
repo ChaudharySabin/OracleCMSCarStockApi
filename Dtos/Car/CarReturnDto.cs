@@ -8,7 +8,7 @@ namespace api.Dtos.Car
 {
     public class CarReturnDto
     {
-        public long Id { get; set; }
+        public int Id { get; set; }
         public string Make { get; set; } = string.Empty;
         public string Model { get; set; } = string.Empty;
 
