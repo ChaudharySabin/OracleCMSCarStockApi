@@ -84,8 +84,7 @@ namespace api.Controllers
         {
             // Console.WriteLine($"Updating stock for car with ID: {id} to {stock.Stock}");
             var car = await _context.Cars.FindAsync(id);
-            Console.WriteLine($"Found car: {car?.Make} {car?.Model} with ID: {id}");
-            Console.WriteLine(stock.Stock);
+
             if (car == null)
             {
                 return NotFound();
@@ -97,6 +96,56 @@ namespace api.Controllers
             await _context.SaveChangesAsync();
 
             return Ok(car.ToCarReturnDto());
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> RemoveCar([FromRoute] int id)
+        {
+            var car = await _context.Cars.FindAsync(id);
+
+            if (car == null)
+            {
+                return NotFound();
+            }
+
+            _context.Cars.Remove(car);
+
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+
+        [HttpGet("search")]
+        public async Task<ActionResult<IEnumerable<CarReturnDto>>> Search([FromQuery] string? make, [FromQuery] string? model)
+        {
+            if (string.IsNullOrWhiteSpace(make) && string.IsNullOrWhiteSpace(model))
+            {
+                return BadRequest("Either Make or Model needs to be provided to search");
+            }
+
+            var query = _context.Cars.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(make) && string.IsNullOrWhiteSpace(model))
+            {
+                Console.WriteLine($"Searching for cars with Make: {make}");
+                query = query.Where(c => c.Make.ToLower() == make.ToLower());
+            }
+            else if (!string.IsNullOrWhiteSpace(model) && string.IsNullOrWhiteSpace(make))
+            {
+                Console.WriteLine($"Searching for cars with Model: {model}");
+                query = query.Where(c => c.Model.ToLower() == model.ToLower());
+            }
+            else
+            {
+                Console.WriteLine($"Searching for cars with Make: {make} and Model: {model}");
+                query = query.Where(c => c.Model.ToLower() == model.ToLower() && c.Make.ToLower() == make.ToLower());
+            }
+
+            var cars = await query.ToListAsync();
+
+            return Ok(cars.Select(c => c.ToCarReturnDto()));
+
         }
 
 
