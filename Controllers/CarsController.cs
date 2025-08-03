@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using api.Mappers;
+using api.Dtos.Car;
 
 using api.Data;
 using api.Models;
@@ -25,7 +27,10 @@ namespace api.Controllers
         public async Task<ActionResult<IEnumerable<Car>>> GetAllCars()
         {
             var cars = await _context.Cars.ToListAsync();
-            return cars;
+
+            List<CarReturnDto> carDtos = cars.Select(car => car.ToCarReturnDto()).ToList();
+
+            return Ok(cars);
         }
 
         [HttpGet("{id}")]
@@ -36,7 +41,7 @@ namespace api.Controllers
             {
                 return NotFound();
             }
-            return car;
+            return Ok(car.ToCarReturnDto());
         }
 
 
