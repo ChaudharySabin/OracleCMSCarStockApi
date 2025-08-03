@@ -36,7 +36,7 @@ namespace api.Controllers
             return Ok(cars);
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public async Task<ActionResult<Car>> GetCarById([FromRoute] int id)
         {
             var car = await _carRepo.GetCarById(id);
@@ -55,7 +55,7 @@ namespace api.Controllers
             return CreatedAtAction(nameof(GetCarById), new { id = createdCar.Id }, createdCar.ToCarReturnDto());
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("{id:int}")]
         public async Task<ActionResult<CarReturnDto>> UpdateCarInfo([FromRoute] int id, [FromBody] CarUpdateDto carUpdateDto)
         {
             var car = await _carRepo.UpdateCar(id, carUpdateDto.Make, carUpdateDto.Model, carUpdateDto.Year);
@@ -70,7 +70,7 @@ namespace api.Controllers
         }
 
 
-        [HttpPut("updatestock/{id}")]
+        [HttpPut("updatestock/{id:int}")]
         public async Task<ActionResult<CarReturnDto>> UpdateCarStock([FromRoute] int id, [FromBody] CarStockUpdateDto stock)
         {
             // Console.WriteLine($"Updating stock for car with ID: {id} to {stock.Stock}");
@@ -84,7 +84,7 @@ namespace api.Controllers
             return Ok(car.ToCarReturnDto());
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:int}")]
         public async Task<IActionResult> RemoveCar([FromRoute] int id)
         {
             var car = await _carRepo.RemoveCar(id);

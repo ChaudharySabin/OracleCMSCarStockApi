@@ -37,7 +37,7 @@ namespace api.Controllers
             return dealerList.Select(d => d.DealerToReturnDto()).ToList();
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public async Task<ActionResult<DealerReturnDto?>> GetDealerById([FromRoute] int id)
         {
             var dealer = await _dealerRepo.GetDealerByIdAsync(id);
@@ -49,7 +49,7 @@ namespace api.Controllers
         }
 
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeleteDealerByID([FromRoute] int id)
         {
             var dealer = await _dealerRepo.DeleteDealerAsync(id);
@@ -63,7 +63,7 @@ namespace api.Controllers
         }
 
 
-        [HttpPut("{id}")]
+        [HttpPut("{id:int}")]
         public async Task<ActionResult<DealerReturnDto?>> UpdateDealer([FromRoute] int id, DealerUpdateDto dealerUpdateDto)
         {
             var dealer = await _dealerRepo.UpdateDealerAsync(id, dealerUpdateDto.Name, dealerUpdateDto.Description);

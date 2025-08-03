@@ -29,7 +29,7 @@ namespace api.Controllers
             return allUsers.Select(u => u.UserToReturnDto()).ToList();
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public async Task<ActionResult<UserReturnDto>> GetUserById([FromRoute] int id)
         {
             var user = await _userRepo.GetUserByIdAsync(id);
@@ -42,7 +42,7 @@ namespace api.Controllers
             return user.UserToReturnDto();
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("{id:int}")]
         public async Task<ActionResult<UserReturnDto>> UpdateUserInfo(int id, UserUpdateInfoDto userUpdateInfoDto)
         {
             var user = await _userRepo.UpdateUserAsync(id, userUpdateInfoDto.Name, userUpdateInfoDto.Email, userUpdateInfoDto.Phone);
