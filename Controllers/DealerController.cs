@@ -72,7 +72,7 @@ namespace api.Controllers
                 return NotFound();
             }
 
-            return CreatedAtAction(nameof(GetDealerById), new {id = dealer.Id}, dealer.DealerToReturnDto());
+            return CreatedAtAction(nameof(GetDealerById), new { id = dealer.Id }, dealer.DealerToReturnDto());
 
         }
 

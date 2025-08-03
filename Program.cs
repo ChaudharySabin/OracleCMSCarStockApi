@@ -13,6 +13,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("SQLSERVERCONNECTION")));
 builder.Services.AddControllers();
 builder.Services.AddScoped<ICarRepository, CarRepository>();
+builder.Services.AddScoped<IDealerRepository, DealerRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 var app = builder.Build();
 
