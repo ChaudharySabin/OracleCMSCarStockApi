@@ -5,15 +5,16 @@ using System.Threading.Tasks;
 
 namespace api.Models
 {
-    public class Car
+    public class User
     {
         public int Id { get; set; }
-        public string Make { get; set; } = string.Empty;
-        public string Model { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
 
-        public int Year { get; set; }
+        public string Email { get; set; } = string.Empty;
 
-        public int Stock { get; set; }
+        public string Phone { get; set; } = string.Empty;
+
+        public string Password { get; set; } = string.Empty;
 
         public int? DealerId { get; set; }
 
