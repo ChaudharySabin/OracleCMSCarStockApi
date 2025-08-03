@@ -56,6 +56,50 @@ namespace api.Controllers
             return CreatedAtAction(nameof(GetCarById), new { id = car.Id }, car.ToCarReturnDto());
         }
 
+        [HttpPut("{id}")]
+        public async Task<ActionResult<CarReturnDto>> UpdateCarInfo([FromRoute] int id, [FromBody] CarUpdateDto carUpdateDto)
+        {
+            var car = await _context.Cars.FindAsync(id);
+
+            if (car == null)
+            {
+                return NotFound();
+            }
+
+
+            car.Make = carUpdateDto.Make;
+            car.Model = carUpdateDto.Model;
+            car.Year = carUpdateDto.Year;
+
+            await _context.SaveChangesAsync();
+
+
+            return Ok(car.ToCarReturnDto());
+
+        }
+
+
+        [HttpPut("updatestock/{id}")]
+        public async Task<ActionResult<CarReturnDto>> UpdateCarStock([FromRoute] int id, [FromBody] CarStockUpdateDto stock)
+        {
+            // Console.WriteLine($"Updating stock for car with ID: {id} to {stock.Stock}");
+            var car = await _context.Cars.FindAsync(id);
+            Console.WriteLine($"Found car: {car?.Make} {car?.Model} with ID: {id}");
+            Console.WriteLine(stock.Stock);
+            if (car == null)
+            {
+                return NotFound();
+            }
+
+
+            car.Stock = stock.Stock;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(car.ToCarReturnDto());
+        }
+
+
 
     }
 }
