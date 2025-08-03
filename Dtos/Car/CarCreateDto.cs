@@ -9,11 +9,11 @@ namespace api.Dtos.Car
     public class CarCreateDto
     {
         [Required(ErrorMessage = "Make of the car is required.")]
-        [StringLength(100)]
+        [StringLength(100), MinLength(1)]
         public string Make { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Model of the car is required.")]
-        [StringLength(100)]
+        [StringLength(100), MinLength(1)]
         public string Model { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Year of the car is required.")]
