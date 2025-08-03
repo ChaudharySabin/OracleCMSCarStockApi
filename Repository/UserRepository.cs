@@ -63,26 +63,32 @@ namespace api.Repository
             userToUpdate.Name = name ?? userToUpdate.Name;
             userToUpdate.Email = email ?? userToUpdate.Email;
             userToUpdate.Phone = phone ?? userToUpdate.Phone;
-
+            userToUpdate.PhoneNumber = phone ?? userToUpdate.PhoneNumber;
             await _context.SaveChangesAsync();
 
             return userToUpdate;
 
         }
 
-        public async Task<User?> UpdateUserDealerIdAsync(int id, int DealerId)
+        public async Task<(User?, Dealer?)> UpdateUserDealerIdAsync(int id, int dealerId)
         {
             var user = await _context.Users.FindAsync(id);
             if (user == null)
             {
-                return user;
+                return (user, null);
             }
 
-            user.DealerId = DealerId;
+            var dealer = await _context.Dealers.FindAsync(dealerId);
+            if (dealer == null)
+            {
+                return (user, dealer);
+            }
+
+            user.DealerId = dealerId;
 
             await _context.SaveChangesAsync();
 
-            return user;
+            return (user, dealer);
 
         }
     }

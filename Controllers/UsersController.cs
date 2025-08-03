@@ -7,6 +7,7 @@ using api.Models;
 using Microsoft.AspNetCore.Mvc;
 using api.Dtos.User;
 using api.Mappers;
+using api.QueryHelpers;
 
 namespace api.Controllers
 {
@@ -52,6 +53,31 @@ namespace api.Controllers
             }
 
             return CreatedAtAction(nameof(GetUserById), new { id = user.Id }, user.UserToReturnDto());
+        }
+
+        [HttpPatch("{id:int}")]
+        public async Task<IActionResult> UpdateUserDealer([FromRoute] int id, [FromQuery] UserDealerUpdateQueryObject userDealerUpdateQueryObject)
+        {
+            // if (!ModelState.IsValid)
+            // {
+            //     return BadRequest();
+            // }
+
+            // Console.WriteLine(userDealerUpdateQueryObject.DealerId);
+            // return Ok();
+            var (user, dealer) = await _userRepo.UpdateUserDealerIdAsync(id, userDealerUpdateQueryObject.DealerId);
+            if (user == null)
+            {
+                return NotFound("User Not Found");
+            }
+
+            if (user != null && dealer == null)
+            {
+                return NotFound("Dealer With the provided dealerId doesnot exists");
+            }
+
+            return CreatedAtAction(nameof(GetUserById), new { id = user!.Id }, user.UserToReturnDto());
+
         }
 
 

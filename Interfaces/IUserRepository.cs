@@ -18,6 +18,6 @@ namespace api.Interfaces
 
         Task<User?> UpdateUserAsync(int id, string? name, string? email, string? phone);
 
-        Task<User?> UpdateUserDealerIdAsync(int id, int DealerId);
+        Task<(User?, Dealer?)> UpdateUserDealerIdAsync(int id, int DealerId);
     }
 }
