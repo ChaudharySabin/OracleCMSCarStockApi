@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using api.Data;
 using NSwag.AspNetCore;
+using api.Interfaces;
+using api.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +12,7 @@ builder.Services.AddOpenApi();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("SQLSERVERCONNECTION")));
 builder.Services.AddControllers();
+builder.Services.AddScoped<ICarRepository, CarRepository>();
 
 var app = builder.Build();
 

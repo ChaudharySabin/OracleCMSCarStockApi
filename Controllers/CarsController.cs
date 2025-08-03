@@ -9,6 +9,7 @@ using api.Dtos.Car;
 using api.Data;
 using api.Models;
 using Microsoft.EntityFrameworkCore;
+using api.Interfaces;
 
 namespace api.Controllers
 {
@@ -16,17 +17,19 @@ namespace api.Controllers
     [Route("api/cars")]
     public class CarsController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
+        // private readonly ApplicationDbContext _context;
+        private readonly ICarRepository _carRepo;
 
-        public CarsController(ApplicationDbContext context)
+        public CarsController(ICarRepository carRepo)
         {
-            _context = context;
+            // _context = context;
+            _carRepo = carRepo;
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Car>>> GetAllCars()
         {
-            var cars = await _context.Cars.ToListAsync();
+            var cars = await _carRepo.GetAllCars();
 
             List<CarReturnDto> carDtos = cars.Select(car => car.ToCarReturnDto()).ToList();
 
@@ -36,7 +39,7 @@ namespace api.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Car>> GetCarById([FromRoute] int id)
         {
-            var car = await _context.Cars.FindAsync(id);
+            var car = await _carRepo.GetCarById(id);
             if (car == null)
             {
                 return NotFound();
@@ -48,31 +51,19 @@ namespace api.Controllers
         public async Task<ActionResult<CarReturnDto>> CreateCar([FromBody] CarCreateDto carCreateDto)
         {
             var car = carCreateDto.ToCarFromCreateDto();
-            _context.Cars.Add(car);
-
-            await _context.SaveChangesAsync();
-
-
-            return CreatedAtAction(nameof(GetCarById), new { id = car.Id }, car.ToCarReturnDto());
+            var createdCar = await _carRepo.CreateCar(car);
+            return CreatedAtAction(nameof(GetCarById), new { id = createdCar.Id }, createdCar.ToCarReturnDto());
         }
 
         [HttpPut("{id}")]
         public async Task<ActionResult<CarReturnDto>> UpdateCarInfo([FromRoute] int id, [FromBody] CarUpdateDto carUpdateDto)
         {
-            var car = await _context.Cars.FindAsync(id);
+            var car = await _carRepo.UpdateCar(id, carUpdateDto.Make, carUpdateDto.Model, carUpdateDto.Year);
 
             if (car == null)
             {
                 return NotFound();
             }
-
-
-            car.Make = carUpdateDto.Make;
-            car.Model = carUpdateDto.Model;
-            car.Year = carUpdateDto.Year;
-
-            await _context.SaveChangesAsync();
-
 
             return Ok(car.ToCarReturnDto());
 
@@ -83,17 +74,12 @@ namespace api.Controllers
         public async Task<ActionResult<CarReturnDto>> UpdateCarStock([FromRoute] int id, [FromBody] CarStockUpdateDto stock)
         {
             // Console.WriteLine($"Updating stock for car with ID: {id} to {stock.Stock}");
-            var car = await _context.Cars.FindAsync(id);
+            var car = await _carRepo.UpdateCarStock(id, stock.Stock);
 
             if (car == null)
             {
                 return NotFound();
             }
-
-
-            car.Stock = stock.Stock;
-
-            await _context.SaveChangesAsync();
 
             return Ok(car.ToCarReturnDto());
         }
@@ -101,16 +87,12 @@ namespace api.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> RemoveCar([FromRoute] int id)
         {
-            var car = await _context.Cars.FindAsync(id);
+            var car = await _carRepo.RemoveCar(id);
 
-            if (car == null)
+            if (!car)
             {
                 return NotFound();
             }
-
-            _context.Cars.Remove(car);
-
-            await _context.SaveChangesAsync();
 
             return NoContent();
         }
@@ -119,36 +101,10 @@ namespace api.Controllers
         [HttpGet("search")]
         public async Task<ActionResult<IEnumerable<CarReturnDto>>> Search([FromQuery] string? make, [FromQuery] string? model)
         {
-            if (string.IsNullOrWhiteSpace(make) && string.IsNullOrWhiteSpace(model))
-            {
-                return BadRequest("Either Make or Model needs to be provided to search");
-            }
-
-            var query = _context.Cars.AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(make) && string.IsNullOrWhiteSpace(model))
-            {
-                Console.WriteLine($"Searching for cars with Make: {make}");
-                query = query.Where(c => c.Make.ToLower() == make.ToLower());
-            }
-            else if (!string.IsNullOrWhiteSpace(model) && string.IsNullOrWhiteSpace(make))
-            {
-                Console.WriteLine($"Searching for cars with Model: {model}");
-                query = query.Where(c => c.Model.ToLower() == model.ToLower());
-            }
-            else
-            {
-                Console.WriteLine($"Searching for cars with Make: {make} and Model: {model}");
-                query = query.Where(c => c.Model.ToLower() == model.ToLower() && c.Make.ToLower() == make.ToLower());
-            }
-
-            var cars = await query.ToListAsync();
+            var cars = await _carRepo.SearchByMakeModel(make: make, model: model);
 
             return Ok(cars.Select(c => c.ToCarReturnDto()));
 
         }
-
-
-
     }
 }
