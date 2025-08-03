@@ -34,7 +34,7 @@ namespace api.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Car>> GetCarById([FromRoute] long id)
+        public async Task<ActionResult<Car>> GetCarById([FromRoute] int id)
         {
             var car = await _context.Cars.FindAsync(id);
             if (car == null)
@@ -44,6 +44,17 @@ namespace api.Controllers
             return Ok(car.ToCarReturnDto());
         }
 
+        [HttpPost]
+        public async Task<ActionResult<CarReturnDto>> CreateCar([FromBody] CarCreateDto carCreateDto)
+        {
+            var car = carCreateDto.ToCarFromCreateDto();
+            _context.Cars.Add(car);
+
+            await _context.SaveChangesAsync();
+
+
+            return CreatedAtAction(nameof(GetCarById), new { id = car.Id }, car.ToCarReturnDto());
+        }
 
 
     }

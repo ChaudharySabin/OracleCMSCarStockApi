@@ -21,5 +21,17 @@ namespace api.Mappers
                 Stock = car.Stock
             };
         }
+
+
+        public static Car ToCarFromCreateDto(this CarCreateDto carCreateDto)
+        {
+            return new Car
+            {
+                Make = carCreateDto.Make,
+                Model = carCreateDto.Model,
+                Year = carCreateDto.Year,
+                Stock = carCreateDto.Stock
+            };
+        }
     }
 }
