@@ -124,9 +124,60 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+await SeedUsersAsync(app);
 // app.UseHttpsRedirection();
 app.MapControllers();
 app.UseAuthentication();
 app.UseAuthorization();
 app.Run();
 
+async Task SeedUsersAsync(WebApplication app)
+{
+    using var scope = app.Services.CreateScope();
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<int>>>();
+
+    // Ensure roles exist (in case you haven't seeded them via HasData)
+    var roles = new[] { "SuperAdmin", "Dealer" };
+    foreach (var roleName in roles)
+    {
+        if (!await roleManager.RoleExistsAsync(roleName))
+            await roleManager.CreateAsync(new IdentityRole<int>(roleName));
+    }
+
+    // 1) SuperAdmin user
+    var superEmail = "superadmin@example.com";
+    var super = await userManager.FindByEmailAsync(superEmail);
+    if (super == null)
+    {
+        super = new User
+        {
+            UserName = "superadmin",
+            Name = "SuperAdminExample",
+            Phone = "0123456789",
+            Email = superEmail,
+            EmailConfirmed = true,
+            DealerId = null    // SuperAdmin isn’t tied to a dealer
+        };
+        await userManager.CreateAsync(super, "Password123#");
+        await userManager.AddToRoleAsync(super, "SuperAdmin");
+    }
+
+    // 2) Dealer user
+    var dealerEmail = "dealer@example.com";
+    var dealer = await userManager.FindByEmailAsync(dealerEmail);
+    if (dealer == null)
+    {
+        dealer = new User
+        {
+            UserName = "dealeruser",
+            Name = "DealerExampleUser",
+            Phone = "0987654321",
+            Email = dealerEmail,
+            EmailConfirmed = true,
+            DealerId = 1   // adjust to your seeded Dealer.Id
+        };
+        await userManager.CreateAsync(dealer, "Password123#");
+        await userManager.AddToRoleAsync(dealer, "Dealer");
+    }
+}
