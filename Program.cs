@@ -186,9 +186,9 @@ async Task SeedDataAsync(WebApplication app)
     }
     var dealeruser = "dealer@example.com";
     var dealer = await userManager.FindByEmailAsync(dealeruser);
-    if (super == null)
+    if (dealer == null)
     {
-        super = new User
+        dealer = new User
         {
             UserName = "dealeruser",
             Name = "Dealeruserexample",
@@ -197,8 +197,8 @@ async Task SeedDataAsync(WebApplication app)
             EmailConfirmed = true,
             DealerId = null    // SuperAdmin isn’t tied to a dealer
         };
-        await userManager.CreateAsync(super, "Password123#");
-        await userManager.AddToRoleAsync(super, "Dealer");
+        await userManager.CreateAsync(dealer, "Password123#");
+        await userManager.AddToRoleAsync(dealer, "Dealer");
     }
     //Uptill here
 
