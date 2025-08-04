@@ -43,7 +43,7 @@ namespace api.Controllers
             var dealerIdClaim = User.FindFirst("dealerId")?.Value;
             if (!int.TryParse(dealerIdClaim, out var dealerId))
             {
-                return Forbid("Dealer is not assigned");
+                return Forbid();
 
             }
 
@@ -106,7 +106,7 @@ namespace api.Controllers
             var dealerIdClaim = User.FindFirst("dealerId")?.Value;
             if (!int.TryParse(dealerIdClaim, out var dealerId))
             {
-                return Forbid("Dealer is not assigned");
+                return Forbid();
             }
             var car = await _carRepo.GetCarById(id);
 
@@ -165,7 +165,7 @@ namespace api.Controllers
             var dealerIdClaim = User.FindFirst("dealerId")?.Value;
             if (!int.TryParse(dealerIdClaim, out var dealerId))
             {
-                return Forbid("Dealer is not assigned");
+                return Forbid();
             }
 
             var car = await _carRepo.GetCarById(id);
@@ -197,7 +197,7 @@ namespace api.Controllers
             var dealerIdClaim = User.FindFirst("dealerId")?.Value;
             if (!int.TryParse(dealerIdClaim, out var dealerId))
             {
-                return Forbid("Dealer is not assigned");
+                return Forbid();
 
             }
 
