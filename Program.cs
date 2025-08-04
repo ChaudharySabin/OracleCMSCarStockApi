@@ -49,8 +49,20 @@ builder.Services.AddSwaggerGen(option =>
 });
 
 //DBcontext
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("SQLSERVERCONNECTION")));
+
+var useInMemory = builder.Configuration.GetValue<bool>("UseInMemoryDatabase");
+if (useInMemory)
+{
+    builder.Services.AddDbContext<ApplicationDbContext>(o =>
+        o.UseInMemoryDatabase("CarStockInMemDb"));
+}
+else
+{
+    builder.Services.AddDbContext<ApplicationDbContext>(o =>
+        o.UseSqlServer(builder.Configuration.GetConnectionString("SQLSERVERCONNECTION")));
+}
+// builder.Services.AddDbContext<ApplicationDbContext>(options =>
+//     options.UseSqlServer(builder.Configuration.GetConnectionString("SQLSERVERCONNECTION")));
 
 
 builder.Services.AddControllers();
@@ -124,13 +136,15 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-await SeedUsersAsync(app);
+await SeedUsersAsync(app); //This can be removed later on and is only there to seed some data on in memory startup
 // app.UseHttpsRedirection();
 app.MapControllers();
 app.UseAuthentication();
 app.UseAuthorization();
 app.Run();
 
+
+// Seed data
 async Task SeedUsersAsync(WebApplication app)
 {
     using var scope = app.Services.CreateScope();
