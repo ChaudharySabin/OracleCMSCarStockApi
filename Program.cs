@@ -139,10 +139,9 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-if (useInMemory)
-{
-    await SeedDataAsync(app); //This can be removed later on and is only there to seed some data on in memory startup
-}
+
+await SeedDataAsync(app); //This can be removed later on and is only there to seed some data on in memory startup
+
 app.UseHttpsRedirection();
 app.MapControllers();
 app.UseAuthentication();
@@ -168,7 +167,7 @@ async Task SeedDataAsync(WebApplication app)
             await roleManager.CreateAsync(new IdentityRole<int>(roleName));
     }
 
-    // 1) SuperAdmin user
+    //This will be seeded both in In Memory and In Database if not found already
     var superEmail = "superadmin@example.com";
     var super = await userManager.FindByEmailAsync(superEmail);
     if (super == null)
@@ -185,64 +184,85 @@ async Task SeedDataAsync(WebApplication app)
         await userManager.CreateAsync(super, "Password123#");
         await userManager.AddToRoleAsync(super, "SuperAdmin");
     }
-
-    // 4) Seed 10 Dealers
-    if (!ctx.Dealers.Any())
+    var dealeruser = "dealeruser@example.com";
+    var dealer = await userManager.FindByEmailAsync(dealeruser);
+    if (super == null)
     {
-        var dealers = Enumerable.Range(1, 10)
-            .Select(i => new Dealer
+        super = new User
+        {
+            UserName = "dealeruser",
+            Name = "Dealeruserexample",
+            Phone = "0123456789",
+            Email = dealeruser,
+            EmailConfirmed = true,
+            DealerId = null    // SuperAdmin isn’t tied to a dealer
+        };
+        await userManager.CreateAsync(super, "Password123#");
+        await userManager.AddToRoleAsync(super, "Dealer");
+    }
+    //Uptill here
+
+
+    if (useInMemory)
+    {
+        // 4) Seed 10 Dealers
+        if (!ctx.Dealers.Any())
+        {
+            var dealers = Enumerable.Range(1, 10)
+                .Select(i => new Dealer
+                {
+                    Name = $"Dealer {i}",
+                    Description = $"Description for Dealer {i}"
+                })
+                .ToList();
+
+            ctx.Dealers.AddRange(dealers);
+            ctx.SaveChanges();
+        }
+
+        // 5) For each Dealer, seed one Dealer‐role user
+        var allDealers = ctx.Dealers.ToList();
+        foreach (var createdDealer in allDealers)
+        {
+            var email = $"dealer{createdDealer.Id}@example.com";
+            if (await userManager.FindByEmailAsync(email) == null)
             {
-                Name = $"Dealer {i}",
-                Description = $"Description for Dealer {i}"
-            })
+                var dealerUser = new User
+                {
+                    UserName = $"dealer{createdDealer.Id}",
+                    Email = email,
+                    EmailConfirmed = true,
+                    DealerId = createdDealer.Id,
+                    Name = $"Dealer User {createdDealer.Id}",
+                    Phone = $"555-000{createdDealer.Id:00}"
+                };
+                await userManager.CreateAsync(dealerUser, "Password123#");
+                await userManager.AddToRoleAsync(dealerUser, "Dealer");
+            }
+        }
+
+        // 6) Seed one Car per Dealer (10 Cars total)
+        if (!ctx.Cars.Any())
+        {
+            var rnd = new Random();
+            var makes = new[] { "Toyota", "Honda", "Ford", "BMW", "Audi", "Kia", "Hyundai", "Nissan", "Chevrolet", "Mazda" };
+            var models = new[] { "Sedan", "SUV", "Coupe", "Hatch", "Wagon", "Truck", "Van", "Convert", "Hybrid", "Electric" };
+
+            var cars = allDealers
+            .SelectMany(dealer =>
+                Enumerable.Range(1, 10).Select(i => new Car
+                {
+                    Make = makes[rnd.Next(makes.Length)],
+                    Model = models[rnd.Next(models.Length)],
+                    Year = rnd.Next(2000, DateTime.Now.Year + 1),
+                    Stock = rnd.Next(1, 100),
+                    DealerId = dealer.Id
+                })
+            )
             .ToList();
 
-        ctx.Dealers.AddRange(dealers);
-        ctx.SaveChanges();
-    }
-
-    // 5) For each Dealer, seed one Dealer‐role user
-    var allDealers = ctx.Dealers.ToList();
-    foreach (var createdDealer in allDealers)
-    {
-        var email = $"dealer{createdDealer.Id}@example.com";
-        if (await userManager.FindByEmailAsync(email) == null)
-        {
-            var dealerUser = new User
-            {
-                UserName = $"dealer{createdDealer.Id}",
-                Email = email,
-                EmailConfirmed = true,
-                DealerId = createdDealer.Id,
-                Name = $"Dealer User {createdDealer.Id}",
-                Phone = $"555-000{createdDealer.Id:00}"
-            };
-            await userManager.CreateAsync(dealerUser, "Password123#");
-            await userManager.AddToRoleAsync(dealerUser, "Dealer");
+            ctx.Cars.AddRange(cars);
+            ctx.SaveChanges();
         }
-    }
-
-    // 6) Seed one Car per Dealer (10 Cars total)
-    if (!ctx.Cars.Any())
-    {
-        var rnd = new Random();
-        var makes = new[] { "Toyota", "Honda", "Ford", "BMW", "Audi", "Kia", "Hyundai", "Nissan", "Chevrolet", "Mazda" };
-        var models = new[] { "Sedan", "SUV", "Coupe", "Hatch", "Wagon", "Truck", "Van", "Convert", "Hybrid", "Electric" };
-
-        var cars = allDealers
-        .SelectMany(dealer =>
-            Enumerable.Range(1, 10).Select(i => new Car
-            {
-                Make = makes[rnd.Next(makes.Length)],
-                Model = models[rnd.Next(models.Length)],
-                Year = rnd.Next(2000, DateTime.Now.Year + 1),
-                Stock = rnd.Next(1, 100),
-                DealerId = dealer.Id
-            })
-        )
-        .ToList();
-
-        ctx.Cars.AddRange(cars);
-        ctx.SaveChanges();
     }
 }

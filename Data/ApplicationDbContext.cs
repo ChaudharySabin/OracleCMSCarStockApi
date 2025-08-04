@@ -46,7 +46,6 @@ namespace api.Data
                     NormalizedName = "DEALER",
                     // ConcurrencyStamp = Guid.NewGuid().ToString()
                 }
-
             );
         }
     }
