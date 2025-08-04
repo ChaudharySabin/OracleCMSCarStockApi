@@ -107,7 +107,7 @@ namespace api.Controllers
 
         [HttpGet("{id:int}/role")]
         [Authorize(Roles = "SuperAdmin")]
-        public async Task<ActionResult<List<string>>> UpdateUserRole([FromRoute] int id)
+        public async Task<ActionResult<List<string>>> GetRoleByIdForUser([FromRoute] int id)
         {
             var user = await _userManager.FindByIdAsync(id.ToString());
             if (user == null)

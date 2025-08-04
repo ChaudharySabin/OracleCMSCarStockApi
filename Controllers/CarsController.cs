@@ -10,11 +10,13 @@ using api.Data;
 using api.Models;
 using Microsoft.EntityFrameworkCore;
 using api.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 
 namespace api.Controllers
 {
     [ApiController]
     [Route("api/cars")]
+    [Authorize]
     public class CarsController : ControllerBase
     {
         // private readonly ApplicationDbContext _context;

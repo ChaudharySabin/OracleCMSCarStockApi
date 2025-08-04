@@ -51,7 +51,7 @@ namespace api.Controllers
                             {
                                 Name = user.Name,
                                 Email = user.Email,
-                                Token = _tokenService.CreateToken(user)
+                                Token = await _tokenService.CreateToken(user)
                             });
                     }
                     else
@@ -91,7 +91,7 @@ namespace api.Controllers
                 return Unauthorized("Invalid email or password.");
             }
 
-            string jwtToken = _tokenService.CreateToken(user);
+            string jwtToken = await _tokenService.CreateToken(user);
 
             return Ok(user.AuthUserReturnDto(jwtToken));
         }

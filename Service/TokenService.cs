@@ -9,25 +9,36 @@ using System.Threading.Tasks;
 using api.Interfaces;
 using api.Models;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Identity;
 
 namespace api.Service
 {
     public class TokenService : ITokenService
     {
         private readonly IConfiguration _config;
-        public TokenService(IConfiguration config)
+        private readonly UserManager<User> _userManager;
+        public TokenService(IConfiguration config, UserManager<User> userManager)
         {
             _config = config;
+            _userManager = userManager;
         }
 
-        public string CreateToken(User user)
+        public async Task<string> CreateToken(User user)
         {
+
+            var roles = await _userManager.GetRolesAsync(user);
+
 
             var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
                 new Claim("dealerId", user.DealerId?.ToString() ?? string.Empty)
             };
+
+            foreach (var role in roles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
 
 
             var jwtSettings = _config.GetSection("JWT");
