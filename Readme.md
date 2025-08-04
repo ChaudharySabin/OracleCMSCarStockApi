@@ -24,7 +24,7 @@ git clone https://github.com/ChaudharySabin/OracleCMSCarStockApi.git
 
 ```bash
 dotnet user-secrets init
-dotnet user-secrets set "JWT:SigningKey"  "a-very-very-very-very-very-long-secret-string"
+dotnet user-secrets set "JWT:SigningKey"  "a-very-very-very-very-very-very-very-very-very-very-very-very-very-very-very-very-very-very-very-very-very-very-very-very-very-long-secret-string"
 dotnet user-secrets set "JWT:Issuer"      "CarStockApp"
 dotnet user-secrets set "JWT:Audience"    "CarStockClients"
 dotnet user-secrets set "JWT:ExpiryMinutes"    30
