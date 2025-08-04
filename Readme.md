@@ -6,7 +6,7 @@ A simple ASP.NET Core Web API for managing car inventory (“stock”) by dealer
 
 - [.NET 9.0 SDK](https://dotnet.microsoft.com/download) (or matching your TargetFramework)
 - Git client
-- (Optional for SQL mode) SQL Server instance or Docker image
+- (Optional for SQL mode) SQL Server instance
 
 ---
 
@@ -29,7 +29,7 @@ dotnet user-secrets set "JWT:Audience"    "CarStockClients"
 dotnet user-secrets set "JWT:ExpiryMinutes"    30
 ```
 
-3. **Configure appsetting.json to include UseInMemoryDatabase:true**
+3. **Configure `appsetting.json` to include UseInMemoryDatabase:true**
 
 ```json
 {
@@ -64,3 +64,19 @@ Password: Password123#
 
 New Registeration will be automatically marked as `Dealer` role but will not be assigned to any dealer.
 Only, SuperAdmin users have the authority to assign users into different dealer
+
+## Optional
+
+1. **To Use SQLServer, Configure `appsetting.json` to include `UseInMemoryDatabase:false` and set user-secrets for connection string**
+
+```bash
+dotnet user-secrets set "ConnectionStrings:SQLSERVERCONNECTION" = YourConnectionStringHere
+```
+
+2. **Create Migrations**
+
+```bash
+dotnet tool install -g dotnet-ef
+dotnet ef migrations add InitialCreate
+dotnet ef database update
+```
