@@ -184,7 +184,7 @@ async Task SeedDataAsync(WebApplication app)
         await userManager.CreateAsync(super, "Password123#");
         await userManager.AddToRoleAsync(super, "SuperAdmin");
     }
-    var dealeruser = "dealeruser@example.com";
+    var dealeruser = "dealer@example.com";
     var dealer = await userManager.FindByEmailAsync(dealeruser);
     if (super == null)
     {

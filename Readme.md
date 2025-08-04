@@ -39,7 +39,7 @@ dotnet user-secrets set "JWT:ExpiryMinutes"    30
 }
 ```
 
-4. **_ Run the API _**
+4. **Run the API **
 
 ```bash
 dotnet restore
@@ -52,7 +52,15 @@ dotnet run
   - 1 SuperAdmin user
 
 5. **\*Browse the API**
-   Visit (http://localhost:5265/swagger) (or the HTTPS URL shown).
+   Visit http://localhost:5265/swagger (or the HTTPS URL shown).
+
+### Default Credential
+
+SuperAdminEmail: superadmin@example.com
+Password: Password123#
+
+DealerUserEmail: dealer@example.com
+Password: Password123#
 
 ## Note
 
