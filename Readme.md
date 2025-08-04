@@ -68,7 +68,11 @@ Only, SuperAdmin users have the authority to assign users into different dealer
 ## Optional
 
 1. **To Use SQLServer, Configure `appsetting.json` to include `UseInMemoryDatabase:false` and set user-secrets for connection string**
-
+```json
+{
+  "UseInMemoryDatabase": false
+}
+```
 ```bash
 dotnet user-secrets set "ConnectionStrings:SQLSERVERCONNECTION" = YourConnectionStringHere
 ```
