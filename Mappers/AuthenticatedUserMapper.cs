@@ -19,7 +19,7 @@ namespace api.Mappers
                 Email = user.Email!,
                 Phone = user.Phone,
                 Token = token,
-                Dealer = user.Dealer
+                // Dealer = user.Dealer
             };
         }
     }
