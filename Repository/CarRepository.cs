@@ -42,22 +42,19 @@ namespace api.Repository
             return await _context.Cars.FindAsync(id);
         }
 
-        public async Task<bool> RemoveCar(int id)
+        public async Task<Car?> RemoveCar(int id)
         {
-            bool isDeleted = false;
 
             Car? car = _context.Cars.Find(id);
 
             if (car == null)
             {
-                return isDeleted;
+                return car;
             }
 
             _context.Cars.Remove(car);
             await _context.SaveChangesAsync();
-            isDeleted = true;
-
-            return isDeleted;
+            return car;
         }
 
         public async Task<IEnumerable<Car>> SearchByMakeModel(string? make, string? model)
@@ -97,6 +94,27 @@ namespace api.Repository
 
             return car;
 
+        }
+
+        public async Task<(Car?, Dealer?)> UpdateCarDealer(int id, int dealerId)
+        {
+            var car = await _context.Cars.FindAsync(id);
+            if (car == null)
+            {
+                return (car, null);
+            }
+
+            var dealer = await _context.Dealers.FindAsync(dealerId);
+            if (dealer == null)
+            {
+                return (car, dealer);
+            }
+
+            car.DealerId = dealerId;
+
+            await _context.SaveChangesAsync();
+
+            return (car, dealer);
         }
 
         public async Task<Car?> UpdateCarStock(int id, int stock)

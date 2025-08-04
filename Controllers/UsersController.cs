@@ -37,7 +37,8 @@ namespace api.Controllers
         }
 
         [HttpGet("{id:int}")]
-        [Authorize(Roles = "SuperAdmin,Dealer")]
+        [Authorize(Roles = "SuperAdmin,Dealer", Policy = "OwnUserPolicy")]
+        // [Authorize(Roles = "SuperAdmin,Dealer")]
         public async Task<ActionResult<UserReturnDto>> GetUserById([FromRoute] int id)
         {
             var user = await _userRepo.GetUserByIdAsync(id);
@@ -51,7 +52,7 @@ namespace api.Controllers
         }
 
         [HttpPut("{id:int}")]
-        [Authorize(Roles = "SuperAdmin,Dealer")]
+        [Authorize(Roles = "SuperAdmin,Dealer", Policy = "OwnUserPolicy")]
         public async Task<ActionResult<UserReturnDto>> UpdateUserInfo(int id, UserUpdateInfoDto userUpdateInfoDto)
         {
             var user = await _userRepo.UpdateUserAsync(id, userUpdateInfoDto.Name, userUpdateInfoDto.Email, userUpdateInfoDto.Phone);
@@ -63,7 +64,7 @@ namespace api.Controllers
             return CreatedAtAction(nameof(GetUserById), new { id = user.Id }, user.UserToReturnDto());
         }
 
-        [HttpPatch("{id:int}")]
+        [HttpPatch("update-dealer/{id:int}")]
         [Authorize(Roles = "SuperAdmin")]
         public async Task<IActionResult> UpdateUserDealer([FromRoute] int id, [FromQuery] UserDealerUpdateQueryObject userDealerUpdateQueryObject)
         {

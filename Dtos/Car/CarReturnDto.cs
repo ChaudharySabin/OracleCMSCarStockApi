@@ -15,5 +15,7 @@ namespace api.Dtos.Car
         public int Year { get; set; }
 
         public int Stock { get; set; }
+        public int? DealerId { get; set; }
+
     }
 }

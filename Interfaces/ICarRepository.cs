@@ -15,10 +15,11 @@ namespace api.Interfaces
         public Task<Car> CreateCar(Car car);
 
         public Task<Car?> UpdateCar(int id, string make, string model, int Year);
+        public Task<(Car?, Dealer?)> UpdateCarDealer(int id, int dealerId);
 
         public Task<Car?> UpdateCarStock(int id, int stock);
 
-        public Task<bool> RemoveCar(int id);
+        public Task<Car?> RemoveCar(int id);
 
         public Task<IEnumerable<Car>> SearchByMakeModel(string? make, string? model);
     }

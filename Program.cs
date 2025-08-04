@@ -12,6 +12,9 @@ using api.Service;
 // using NSwag.Generation.Processors.Security;
 
 using Microsoft.OpenApi.Models;
+using api.Requirements;
+using Microsoft.AspNetCore.Authorization;
+using api.Handlers;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -45,15 +48,20 @@ builder.Services.AddSwaggerGen(option =>
     });
 });
 
+//DBcontext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("SQLSERVERCONNECTION")));
+
+
 builder.Services.AddControllers();
 
-
+//DI
 builder.Services.AddScoped<ICarRepository, CarRepository>();
 builder.Services.AddScoped<IDealerRepository, DealerRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddSingleton<IAuthorizationHandler, MustBeOwnUserHandler>();
+builder.Services.AddSingleton<IAuthorizationHandler, MustHaveSameDealerIdHandler>();
 
 
 
@@ -91,7 +99,18 @@ builder.Services.AddAuthentication(options =>
         };
     });
 
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("OwnUserPolicy", policy =>
+    {
+        policy.Requirements.Add(new MustBeOwnUserRequirement());
+    });
 
+    options.AddPolicy("SameDealerPolicy", policy =>
+    {
+        policy.Requirements.Add(new MustHaveSameDealerIdRequirement());
+    });
+});
 
 var app = builder.Build();
 

@@ -18,19 +18,21 @@ namespace api.Mappers
                 Make = car.Make,
                 Model = car.Model,
                 Year = car.Year,
-                Stock = car.Stock
+                Stock = car.Stock,
+                DealerId = car.DealerId
             };
         }
 
 
-        public static Car ToCarFromCreateDto(this CarCreateDto carCreateDto)
+        public static Car ToCarFromCreateDto(this CarCreateDto carCreateDto, int dealerId)
         {
             return new Car
             {
                 Make = carCreateDto.Make,
                 Model = carCreateDto.Model,
                 Year = carCreateDto.Year,
-                Stock = carCreateDto.Stock
+                Stock = carCreateDto.Stock,
+                DealerId = dealerId
             };
         }
     }

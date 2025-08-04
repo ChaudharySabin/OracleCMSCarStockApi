@@ -41,7 +41,7 @@ namespace api.Controllers
         }
 
         [HttpGet("{id:int}")]
-        [Authorize(Roles = "SuperAdmin,Dealer")]
+        [Authorize(Roles = "SuperAdmin,Dealer", Policy = "SameDealerPolicy")]
         public async Task<ActionResult<DealerReturnDto?>> GetDealerById([FromRoute] int id)
         {
             var dealer = await _dealerRepo.GetDealerByIdAsync(id);
@@ -69,7 +69,7 @@ namespace api.Controllers
 
 
         [HttpPut("{id:int}")]
-        [Authorize(Roles = "SuperAdmin,Dealer")]
+        [Authorize(Roles = "SuperAdmin,Dealer", Policy = "SameDealerPolicy")]
         public async Task<ActionResult<DealerReturnDto?>> UpdateDealer([FromRoute] int id, DealerUpdateDto dealerUpdateDto)
         {
             var dealer = await _dealerRepo.UpdateDealerAsync(id, dealerUpdateDto.Name, dealerUpdateDto.Description);
