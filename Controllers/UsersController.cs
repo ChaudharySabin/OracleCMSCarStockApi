@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 using api.Dtos.User;
 using api.Mappers;
 using api.QueryHelpers;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 
 namespace api.Controllers
 {
@@ -16,13 +18,17 @@ namespace api.Controllers
     public class UsersController : ControllerBase
     {
         private readonly IUserRepository _userRepo;
-
-        public UsersController(IUserRepository userRepo)
+        private readonly UserManager<User> _userManager;
+        private readonly RoleManager<IdentityRole<int>> _roleManager;
+        public UsersController(IUserRepository userRepo, UserManager<User> userManager, RoleManager<IdentityRole<int>> roleManager)
         {
             _userRepo = userRepo;
+            _userManager = userManager;
+            _roleManager = roleManager;
         }
 
         [HttpGet]
+        [Authorize(Roles = "SuperAdmin")]
         public async Task<ActionResult<IEnumerable<UserReturnDto>>> GetAllUsers()
         {
             var allUsers = await _userRepo.GetAllUsersAsync();
@@ -31,6 +37,7 @@ namespace api.Controllers
         }
 
         [HttpGet("{id:int}")]
+        [Authorize(Roles = "SuperAdmin,Dealer")]
         public async Task<ActionResult<UserReturnDto>> GetUserById([FromRoute] int id)
         {
             var user = await _userRepo.GetUserByIdAsync(id);
@@ -44,6 +51,7 @@ namespace api.Controllers
         }
 
         [HttpPut("{id:int}")]
+        [Authorize(Roles = "SuperAdmin,Dealer")]
         public async Task<ActionResult<UserReturnDto>> UpdateUserInfo(int id, UserUpdateInfoDto userUpdateInfoDto)
         {
             var user = await _userRepo.UpdateUserAsync(id, userUpdateInfoDto.Name, userUpdateInfoDto.Email, userUpdateInfoDto.Phone);
@@ -56,6 +64,7 @@ namespace api.Controllers
         }
 
         [HttpPatch("{id:int}")]
+        [Authorize(Roles = "SuperAdmin")]
         public async Task<IActionResult> UpdateUserDealer([FromRoute] int id, [FromQuery] UserDealerUpdateQueryObject userDealerUpdateQueryObject)
         {
             // if (!ModelState.IsValid)
@@ -83,6 +92,7 @@ namespace api.Controllers
 
         [HttpDelete]
         [Route("{id:int}")]
+        [Authorize(Roles = "SuperAdmin")]
         public async Task<IActionResult> DeleteUser([FromRoute] int id)
         {
             var deletedUser = await _userRepo.DeleteUserAsync(id);
@@ -95,6 +105,56 @@ namespace api.Controllers
         }
 
 
+        [HttpGet("{id:int}/role")]
+        [Authorize(Roles = "SuperAdmin")]
+        public async Task<ActionResult<List<string>>> UpdateUserRole([FromRoute] int id)
+        {
+            var user = await _userManager.FindByIdAsync(id.ToString());
+            if (user == null)
+            {
+                return NotFound($"The user with the Id {id} doesn't exist");
+            }
 
+            var currentRoles = await _userManager.GetRolesAsync(user);
+            return Ok(currentRoles.ToList());
+
+        }
+
+
+        [HttpPut("{id:int}/update-role")]
+        [Authorize(Roles = "SuperAdmin")]
+        public async Task<IActionResult> UpdateUserRole([FromRoute] int id, [FromBody] UpdateRoleDto updateRoleDto)
+        {
+            var user = await _userManager.FindByIdAsync(id.ToString());
+            if (user == null)
+            {
+                return NotFound($"The user with the Id {id} doesn't exist");
+            }
+
+            var role = await _roleManager.RoleExistsAsync(updateRoleDto.Role);
+            if (!role)
+            {
+                return NotFound($"The Role:{updateRoleDto.Role} doesn't exist");
+            }
+
+            var currentRoles = await _userManager.GetRolesAsync(user);
+            if (currentRoles.Any())
+            {
+                var removeResult = await _userManager.RemoveFromRolesAsync(user, currentRoles);
+                if (!removeResult.Succeeded)
+                {
+                    return StatusCode(500, removeResult.Errors);
+                }
+            }
+
+            var addRolesResult = await _userManager.AddToRoleAsync(user, updateRoleDto.Role);
+            if (!addRolesResult.Succeeded)
+            {
+                return StatusCode(500, addRolesResult.Errors);
+            }
+
+            return NoContent();
+
+        }
     }
 }

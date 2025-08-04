@@ -7,6 +7,7 @@ using api.Interfaces;
 using api.Models;
 using Microsoft.AspNetCore.Mvc;
 using api.Mappers;
+using Microsoft.AspNetCore.Authorization;
 
 namespace api.Controllers
 {
@@ -22,6 +23,7 @@ namespace api.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "SuperAdmin")]
         public async Task<ActionResult<Dealer>> CreateDealer([FromBody] DealerCreateDto dealerCreateDto)
         {
             var dealer = dealerCreateDto.DtoToDealer();
@@ -31,6 +33,7 @@ namespace api.Controllers
 
 
         [HttpGet]
+        [Authorize(Roles = "SuperAdmin")]
         public async Task<ActionResult<IEnumerable<DealerReturnDto>>> GetAllDealers()
         {
             var dealerList = await _dealerRepo.GetAllDealersAsync();
@@ -38,6 +41,7 @@ namespace api.Controllers
         }
 
         [HttpGet("{id:int}")]
+        [Authorize(Roles = "SuperAdmin,Dealer")]
         public async Task<ActionResult<DealerReturnDto?>> GetDealerById([FromRoute] int id)
         {
             var dealer = await _dealerRepo.GetDealerByIdAsync(id);
@@ -50,6 +54,7 @@ namespace api.Controllers
 
 
         [HttpDelete("{id:int}")]
+        [Authorize(Roles = "SuperAdmin")]
         public async Task<IActionResult> DeleteDealerByID([FromRoute] int id)
         {
             var dealer = await _dealerRepo.DeleteDealerAsync(id);
@@ -64,6 +69,7 @@ namespace api.Controllers
 
 
         [HttpPut("{id:int}")]
+        [Authorize(Roles = "SuperAdmin,Dealer")]
         public async Task<ActionResult<DealerReturnDto?>> UpdateDealer([FromRoute] int id, DealerUpdateDto dealerUpdateDto)
         {
             var dealer = await _dealerRepo.UpdateDealerAsync(id, dealerUpdateDto.Name, dealerUpdateDto.Description);

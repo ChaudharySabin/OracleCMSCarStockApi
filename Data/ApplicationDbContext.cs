@@ -22,6 +22,15 @@ namespace api.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+            builder.Entity<User>()
+                    .HasIndex(u => u.Email)
+                    .IsUnique();
+
+            builder.Entity<User>()
+                .HasIndex(u => u.NormalizedEmail)
+                .IsUnique();
+
+
             builder.Entity<IdentityRole<int>>().HasData(
                 new IdentityRole<int>
                 {
