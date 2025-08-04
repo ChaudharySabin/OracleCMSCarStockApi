@@ -62,6 +62,7 @@ namespace api.Repository
 
             userToUpdate.Name = name ?? userToUpdate.Name;
             userToUpdate.Email = email ?? userToUpdate.Email;
+            userToUpdate.NormalizedEmail = email?.ToUpper() ?? userToUpdate.NormalizedEmail;
             userToUpdate.Phone = phone ?? userToUpdate.Phone;
             userToUpdate.PhoneNumber = phone ?? userToUpdate.PhoneNumber;
             await _context.SaveChangesAsync();

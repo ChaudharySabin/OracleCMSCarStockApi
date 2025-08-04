@@ -6,18 +6,10 @@ using System.Threading.Tasks;
 
 namespace api.Dtos.Account
 {
-    public class RegisterDto
+    public class ResetPasswordDto
     {
         [Required]
-        public string? Username { get; set; }
-
-        [Required]
-        [StringLength(100), MinLength(1)]
-        public string Name { get; set; } = string.Empty;
-
-        [Required]
-        [StringLength(12), MinLength(10)]
-        public string Phone { get; set; } = string.Empty;
+        public string Token { get; set; } = string.Empty;
 
         [Required]
         [EmailAddress]
@@ -25,11 +17,10 @@ namespace api.Dtos.Account
 
         [Required]
         [MinLength(8, ErrorMessage = "Password must be at least 8 characters.")]
-        public string Password { get; set; } = string.Empty;
+        public string NewPassword { get; set; } = string.Empty;
 
         [Required]
-        [Compare(nameof(Password), ErrorMessage = "Passwords do not match.")]
+        [Compare(nameof(NewPassword), ErrorMessage = "Passwords do not match.")]
         public string ConfirmPassword { get; set; } = string.Empty;
-
     }
 }
