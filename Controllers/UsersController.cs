@@ -10,6 +10,7 @@ using api.Mappers;
 using api.QueryHelpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
 
 namespace api.Controllers
 {
@@ -96,6 +97,18 @@ namespace api.Controllers
         [Authorize(Roles = "SuperAdmin")]
         public async Task<IActionResult> DeleteUser([FromRoute] int id)
         {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdClaim, out var authenticatedUserId))
+            {
+                return Forbid();
+
+            }
+
+            if (authenticatedUserId == id)
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, new { Message = "Users Cannot Delete Themselves" });
+            }
+
             var deletedUser = await _userRepo.DeleteUserAsync(id);
             if (deletedUser == null)
             {
