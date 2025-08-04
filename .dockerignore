@@ -1,0 +1,7 @@
+bin/
+obj/
+.vs/
+.vscode/
+*.mdf
+*.ldf
+secrets.json
