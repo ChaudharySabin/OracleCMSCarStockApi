@@ -66,13 +66,13 @@ namespace api.Repository
             if (!string.IsNullOrWhiteSpace(make))
             {
                 result = result.Where(c =>
-                    c.Make.Equals(make, StringComparison.OrdinalIgnoreCase));
+                    c.Make.Contains(make, StringComparison.OrdinalIgnoreCase));
             }
 
             if (!string.IsNullOrWhiteSpace(model))
             {
                 result = result.Where(c =>
-                    c.Model.Equals(model, StringComparison.OrdinalIgnoreCase));
+                    c.Model.Contains(model, StringComparison.OrdinalIgnoreCase));
             }
 
             return result;

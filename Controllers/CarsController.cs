@@ -43,7 +43,7 @@ namespace api.Controllers
             var dealerIdClaim = User.FindFirst("dealerId")?.Value;
             if (!int.TryParse(dealerIdClaim, out var dealerId))
             {
-                return Forbid();
+                return StatusCode(StatusCodes.Status403Forbidden, "Dealer is not set, Please contact admin");
 
             }
 
