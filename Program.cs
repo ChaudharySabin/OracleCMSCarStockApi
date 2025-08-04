@@ -61,9 +61,12 @@ else
     builder.Services.AddDbContext<ApplicationDbContext>(o =>
         o.UseSqlServer(builder.Configuration.GetConnectionString("SQLSERVERCONNECTION")));
 }
+
+
 // builder.Services.AddDbContext<ApplicationDbContext>(options =>
 //     options.UseSqlServer(builder.Configuration.GetConnectionString("SQLSERVERCONNECTION")));
-
+// builder.Services.AddDbContext<ApplicationDbContext>(o =>
+//         o.UseInMemoryDatabase("CarStockInMemDb"));
 
 builder.Services.AddControllers();
 
@@ -136,8 +139,11 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-await SeedUsersAsync(app); //This can be removed later on and is only there to seed some data on in memory startup
-// app.UseHttpsRedirection();
+if (useInMemory)
+{
+    await SeedDataAsync(app); //This can be removed later on and is only there to seed some data on in memory startup
+}
+app.UseHttpsRedirection();
 app.MapControllers();
 app.UseAuthentication();
 app.UseAuthorization();
@@ -145,13 +151,16 @@ app.Run();
 
 
 // Seed data
-async Task SeedUsersAsync(WebApplication app)
+async Task SeedDataAsync(WebApplication app)
 {
     using var scope = app.Services.CreateScope();
+    var ctx = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<int>>>();
 
-    // Ensure roles exist (in case you haven't seeded them via HasData)
+    ctx.Database.EnsureCreated();
+
+    // Ensure roles exist
     var roles = new[] { "SuperAdmin", "Dealer" };
     foreach (var roleName in roles)
     {
@@ -177,21 +186,63 @@ async Task SeedUsersAsync(WebApplication app)
         await userManager.AddToRoleAsync(super, "SuperAdmin");
     }
 
-    // 2) Dealer user
-    var dealerEmail = "dealer@example.com";
-    var dealer = await userManager.FindByEmailAsync(dealerEmail);
-    if (dealer == null)
+    // 4) Seed 10 Dealers
+    if (!ctx.Dealers.Any())
     {
-        dealer = new User
+        var dealers = Enumerable.Range(1, 10)
+            .Select(i => new Dealer
+            {
+                Name = $"Dealer {i}",
+                Description = $"Description for Dealer {i}"
+            })
+            .ToList();
+
+        ctx.Dealers.AddRange(dealers);
+        ctx.SaveChanges();
+    }
+
+    // 5) For each Dealer, seed one Dealer‐role user
+    var allDealers = ctx.Dealers.ToList();
+    foreach (var createdDealer in allDealers)
+    {
+        var email = $"dealer{createdDealer.Id}@example.com";
+        if (await userManager.FindByEmailAsync(email) == null)
         {
-            UserName = "dealeruser",
-            Name = "DealerExampleUser",
-            Phone = "0987654321",
-            Email = dealerEmail,
-            EmailConfirmed = true,
-            DealerId = 1   // adjust to your seeded Dealer.Id
-        };
-        await userManager.CreateAsync(dealer, "Password123#");
-        await userManager.AddToRoleAsync(dealer, "Dealer");
+            var dealerUser = new User
+            {
+                UserName = $"dealer{createdDealer.Id}",
+                Email = email,
+                EmailConfirmed = true,
+                DealerId = createdDealer.Id,
+                Name = $"Dealer User {createdDealer.Id}",
+                Phone = $"555-000{createdDealer.Id:00}"
+            };
+            await userManager.CreateAsync(dealerUser, "Password123#");
+            await userManager.AddToRoleAsync(dealerUser, "Dealer");
+        }
+    }
+
+    // 6) Seed one Car per Dealer (10 Cars total)
+    if (!ctx.Cars.Any())
+    {
+        var rnd = new Random();
+        var makes = new[] { "Toyota", "Honda", "Ford", "BMW", "Audi", "Kia", "Hyundai", "Nissan", "Chevrolet", "Mazda" };
+        var models = new[] { "Sedan", "SUV", "Coupe", "Hatch", "Wagon", "Truck", "Van", "Convert", "Hybrid", "Electric" };
+
+        var cars = allDealers
+        .SelectMany(dealer =>
+            Enumerable.Range(1, 10).Select(i => new Car
+            {
+                Make = makes[rnd.Next(makes.Length)],
+                Model = models[rnd.Next(models.Length)],
+                Year = rnd.Next(2000, DateTime.Now.Year + 1),
+                Stock = rnd.Next(1, 100),
+                DealerId = dealer.Id
+            })
+        )
+        .ToList();
+
+        ctx.Cars.AddRange(cars);
+        ctx.SaveChanges();
     }
 }
