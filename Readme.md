@@ -16,6 +16,7 @@ A simple ASP.NET Core Web API for managing car inventory (“stock”) by dealer
 
 ```bash
 git clone https://github.com/ChaudharySabin/OracleCMSCarStockApi.git api
+cd api/
 ```
 
 2. **Initialize & configure user-secrets**
