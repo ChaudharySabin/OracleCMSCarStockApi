@@ -75,7 +75,16 @@ Only, SuperAdmin users have the authority to assign users into different dealer
 dotnet tool install --global Rnwood.Smtp4dev
 ```
 
--Run the tool
+- Provide secrets
+
+```bash
+dotnet user-secrets set "Smtp:Host"  "localhost"
+dotnet user-secrets set "Smtp:Port"      25
+dotnet user-secrets set "Smtp:From"    "noreply@carstock.local"
+dotnet user-secrets set "JWT:ExpiryMinutes"    30
+```
+
+- Run the tool (You can also use the docker for SMTP4Dev)
 
 ```bash
 smtp4dev
