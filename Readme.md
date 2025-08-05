@@ -108,3 +108,45 @@ dotnet tool install -g dotnet-ef
 dotnet ef migrations add InitialCreate
 dotnet ef database update
 ```
+
+## Docker
+
+1. **Pull the docker image**
+
+```bash
+docker pull chaudharysabin/carstockapi:v1.2
+```
+
+2. **Run the docker container\***
+
+```bash
+docker run -d \
+  --name carstock-api \
+  -p <Port>:80 \
+  -e UseInMemoryDatabase=true \
+  -e Smtp__Host="host.docker.internal" \
+  -e Smtp__Port="25" \
+  -e Smtp__From="<YourFromEmail>" \
+  -e JWT__SigningKey="<YourVeryLongSigningKey>" \
+  -e JWT__Issuer="YourIssue" \
+  -e JWT__Audience="YourAudence" \
+  -e ASPNETCORE_ENVIRONMENT="development" \
+  chaudharysabin/carstockapi:v1.2
+```
+
+-Example:
+
+```bash
+docker run -d \
+  --name carstock-api \
+  -p 5256:80 \
+  -e UseInMemoryDatabase=true \
+  -e Smtp__Host="host.docker.internal" \
+  -e Smtp__Port="25" \
+  -e Smtp__From="noreply@localhost" \
+  -e JWT__SigningKey="MySuperSecretKey123!" \
+  -e JWT__Issuer="CarStockApp" \
+  -e JWT__Audience="CarStockClients" \
+  -e ASPNETCORE_ENVIRONMENT="Development" \
+  chaudharysabin/carstockapi:v1.2
+```
