@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Storage;
 using api.Mappers;
+using System.Net;
 
 namespace api.Controllers
 {
@@ -18,11 +19,13 @@ namespace api.Controllers
     {
         private readonly UserManager<User> _userManager;
         private readonly ITokenService _tokenService;
+        private readonly IEmailSender _emailSender;
 
-        public AccountController(UserManager<User> userManager, ITokenService tokenService)
+        public AccountController(UserManager<User> userManager, ITokenService tokenService, IEmailSender emailSender)
         {
             _userManager = userManager;
             _tokenService = tokenService;
+            _emailSender = emailSender;
         }
 
         [HttpPost("register")]
@@ -110,7 +113,22 @@ namespace api.Controllers
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
 
-            return Ok(new ResetPasswordTokenReturnDto { ResetToken = token });
+            var htmlMessage = $@"
+                <p>Hello {user.UserName},</p>
+                <p>Your password reset code is:</p>
+                <h2 style=""font-family:monospace;color:#007ACC;"">{WebUtility.HtmlEncode(token)}</h2>
+                <p>Enter this code in the app to reset your password. It will expire in a few minutes.</p>
+            ";
+
+            await _emailSender.SendEmailAsync(
+                        user.Email!,
+                        "Your password reset link",
+                       htmlMessage
+                    );
+
+            // return Ok(new ResetPasswordTokenReturnDto { ResetToken = token });
+
+            return Ok("Your Reset Token will be sent in a short time");
         }
 
 

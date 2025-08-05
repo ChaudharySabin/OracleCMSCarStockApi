@@ -15,6 +15,7 @@ using Microsoft.OpenApi.Models;
 using api.Requirements;
 using Microsoft.AspNetCore.Authorization;
 using api.Handlers;
+using api.Configuration;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -79,7 +80,7 @@ builder.Services.AddSingleton<IAuthorizationHandler, MustBeOwnUserHandler>();
 builder.Services.AddSingleton<IAuthorizationHandler, MustHaveSameDealerIdHandler>();
 
 
-
+//Identity
 builder.Services.AddIdentity<User, IdentityRole<int>>(options =>
     {
         options.Password.RequireDigit = true;
@@ -126,6 +127,12 @@ builder.Services.AddAuthorization(options =>
         policy.Requirements.Add(new MustHaveSameDealerIdRequirement());
     });
 });
+
+
+//Email
+builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("Smtp"));
+builder.Services.AddTransient<IEmailSender, EmailSender>();
+
 
 var app = builder.Build();
 

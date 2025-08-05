@@ -67,12 +67,28 @@ Only, SuperAdmin users have the authority to assign users into different dealer
 
 ## Optional
 
-1. **To Use SQLServer, Configure `appsetting.json` to include `UseInMemoryDatabase:false` and set user-secrets for connection string**
+1. ** To use the reset password token feature, Please configure the localSMTP using SMTP4Dev**
+
+- Install the tool
+
+```bash
+dotnet tool install --global Rnwood.Smtp4dev
+```
+
+-Run the tool
+
+```bash
+smtp4dev
+```
+
+2. **To Use SQLServer, Configure `appsetting.json` and remove `UseInMemoryDatabase:false` and set user-secrets for connection string**
+
 ```json
 {
   "UseInMemoryDatabase": false
 }
 ```
+
 ```bash
 dotnet user-secrets set "ConnectionStrings:SQLSERVERCONNECTION" = YourConnectionStringHere
 ```
