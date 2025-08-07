@@ -43,16 +43,17 @@ namespace api.EFcore.Repository
 
         public async Task<IEnumerable<User>> GetAllUsersAsync()
         {
-            return await _context.Users.Include(u => u.Dealer).ToListAsync();
+            // return await _context.Users.Include(u => u.Dealer).ToListAsync();
+            return await _context.Users.ToListAsync();
         }
 
         public async Task<User?> GetUserByIdAsync(int id)
         {
-            return await _context.Users.Include(u => u.Dealer).FirstOrDefaultAsync(u => u.Id == id);
+            return await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
 
         }
 
-        public async Task<User?> UpdateUserAsync(int id, string? name, string? email, string? phone)
+        public async Task<User?> UpdateUserAsync(int id, string? username, string? fullname, string? email, string? phone)
         {
             var userToUpdate = await _context.Users.FindAsync(id);
             if (userToUpdate == null)
@@ -60,7 +61,7 @@ namespace api.EFcore.Repository
                 return userToUpdate;
             }
 
-            userToUpdate.Name = name ?? userToUpdate.Name;
+            userToUpdate.Name = fullname ?? userToUpdate.Name;
             userToUpdate.Email = email ?? userToUpdate.Email;
             userToUpdate.NormalizedEmail = email?.ToUpper() ?? userToUpdate.NormalizedEmail;
             userToUpdate.Phone = phone ?? userToUpdate.Phone;

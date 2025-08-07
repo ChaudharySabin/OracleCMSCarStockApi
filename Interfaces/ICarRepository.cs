@@ -12,6 +12,8 @@ namespace api.Interfaces
         public Task<IEnumerable<Car>> GetAllCars();
         public Task<Car?> GetCarById(int id);
 
+        public Task<Car?> GetCarByIdWithDealer(int id, int dealerId);
+
         public Task<Car> CreateCar(Car car);
 
         public Task<Car?> UpdateCar(int id, string make, string model, int Year);

@@ -17,6 +17,8 @@ namespace api.Models
 
         public int? DealerId { get; set; }
 
-        public Dealer? Dealer { get; set; }
+        public string? DealerName { get; set; }
+
+        public string? ConcurrencyStamp { get; set; }
     }
 }

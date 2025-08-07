@@ -48,10 +48,32 @@ namespace api.Repository.Dapper
             return await _db.QuerySingleOrDefaultAsync<User>(sql, new { Id = id });
         }
 
-        public async Task<User?> UpdateUserAsync(int id, string? name, string? email, string? phone)
+        public async Task<User?> UpdateUserAsync(int id, string? username, string? fullname, string? email, string? phone)
         {
-            var sql = "Update Users set Name = @Name, Email = @Email, Phone = @Phone where Id = @Id";
-            var affectedRows = await _db.ExecuteAsync(sql, new { Id = id, Name = name, Email = email, Phone = phone });
+            var user = await GetUserByIdAsync(id);
+            if (user == null)
+            {
+                return null;
+            }
+            var oldConcurrencyStamp = user.ConcurrencyStamp;
+            var newConcurrencyStamp = Guid.NewGuid().ToString("D");
+            var sql = "Update Users set UserName = @UserName, Name = @Name, NormalizedUserName = @NormalizedUserName, " +
+                      "Email = @Email, NormalizedEmail = @NormalizedEmail, SecurityStamp = @SecurityStamp, " +
+                      "ConcurrencyStamp = @ConcurrencyStamp where Id = @Id and ConcurrencyStamp = @ConcurrencyStamp";
+            var affectedRows = await _db.ExecuteAsync(sql, new
+            {
+                Id = id,
+                UserName = username,
+                Name = fullname,
+                Email = email,
+                Phone = phone,
+                NormalizedUserName = username!.ToUpper(),
+                NormalizedEmail = email?.ToUpper(),
+                SecurityStamp = user.SecurityStamp,
+                ConcurrencyStamp = newConcurrencyStamp
+            });
+
+
             if (affectedRows == 0)
             {
                 return null;
@@ -72,8 +94,10 @@ namespace api.Repository.Dapper
                 return (user, null);
             }
             user.DealerId = dealerId;
-            var updateSql = "Update Users set DealerId = @DealerId where Id = @Id";
-            var affectedRow = await _db.ExecuteAsync(updateSql, new { DealerId = dealerId, Id = id });
+            var oldConcurrencyStamp = user.ConcurrencyStamp;
+            var newConcurrencyStamp = Guid.NewGuid().ToString("D");
+            var updateSql = "Update Users set DealerId = @DealerId, ConcurrencyStamp = @ConcurrencyStamp where Id = @Id and ConcurrencyStamp = @OldConcurrencyStamp";
+            var affectedRow = await _db.ExecuteAsync(updateSql, new { DealerId = dealerId, Id = id, ConcurrencyStamp = newConcurrencyStamp, OldConcurrencyStamp = oldConcurrencyStamp });
             if (affectedRow == 0)
             {
                 return (null, null);

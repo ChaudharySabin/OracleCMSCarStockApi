@@ -16,7 +16,7 @@ namespace api.Interfaces
 
         Task<User?> DeleteUserAsync(int id);
 
-        Task<User?> UpdateUserAsync(int id, string? name, string? email, string? phone);
+        Task<User?> UpdateUserAsync(int id, string? username, string? name, string? email, string? phone);
 
         Task<(User?, Dealer?)> UpdateUserDealerIdAsync(int id, int DealerId);
     }

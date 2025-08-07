@@ -13,12 +13,12 @@ namespace api.Models
 
         // public string Email { get; set; } = string.Empty;
 
-        public string Phone { get; set; } = string.Empty;
+        public string? Phone { get; set; } = string.Empty;
 
         // public string PasswordHash { get; set; } = string.Empty;
 
         public int? DealerId { get; set; }
 
-        public Dealer? Dealer { get; set; }
+        // public Dealer? Dealer { get; set; }
     }
 }

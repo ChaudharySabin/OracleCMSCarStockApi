@@ -56,7 +56,7 @@ namespace api.Controllers
         [Authorize(Roles = "SuperAdmin,Dealer", Policy = "OwnUserPolicy")]
         public async Task<ActionResult<UserReturnDto>> UpdateUserInfo(int id, UserUpdateInfoDto userUpdateInfoDto)
         {
-            var user = await _userRepo.UpdateUserAsync(id, userUpdateInfoDto.Name, userUpdateInfoDto.Email, userUpdateInfoDto.Phone);
+            var user = await _userRepo.UpdateUserAsync(id, userUpdateInfoDto.UserName, userUpdateInfoDto.FullName, userUpdateInfoDto.Email, userUpdateInfoDto.Phone);
             if (user == null)
             {
                 return NotFound();

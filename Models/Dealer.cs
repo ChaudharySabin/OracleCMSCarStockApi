@@ -13,6 +13,8 @@ namespace api.Models
 
         public string? Description { get; set; }
 
-        public List<Car> Cars { get; set; } = new List<Car>();
+        public string? ConcurrencyStamp { get; set; }
+
+        // public List<Car> Cars { get; set; } = new List<Car>();
     }
 }

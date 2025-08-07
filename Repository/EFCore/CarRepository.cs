@@ -42,6 +42,11 @@ namespace api.EFcore.Repository
             return await _context.Cars.FindAsync(id);
         }
 
+        public async Task<Car?> GetCarByIdWithDealer(int id, int dealerId)
+        {
+            return await _context.Cars.FirstOrDefaultAsync(c => c.Id == id && c.DealerId == dealerId);
+        }
+
         public async Task<Car?> RemoveCar(int id)
         {
 

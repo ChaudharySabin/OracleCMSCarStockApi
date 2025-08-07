@@ -10,7 +10,11 @@ namespace api.Dtos.User
     {
         [Required]
         [StringLength(100), MinLength(1)]
-        public string Name { get; set; } = string.Empty;
+        public string UserName { get; set; } = string.Empty;
+
+        [Required]
+        [StringLength(100), MinLength(1)]
+        public string FullName { get; set; } = string.Empty;
 
         [Required]
         [StringLength(100), MinLength(1)]
