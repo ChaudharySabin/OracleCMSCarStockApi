@@ -1,7 +1,8 @@
 CREATE table If not exists Dealers(
     Id INTEGER PRIMARY KEY AUTOINCREMENT,
     Name VARCHAR(255) NOT NULL,
-    Description Text NULL
+    Description Text NULL,
+    ConcurrencyStamp VARCHAR(255) NULL,
 );
 
 CREATE TABLE IF NOT EXISTS Cars (
@@ -11,6 +12,7 @@ CREATE TABLE IF NOT EXISTS Cars (
   Model     TEXT    NOT NULL,
   Year      INTEGER NOT NULL,
   Stock     INTEGER NOT NULL,
+  ConcurrencyStamp VARCHAR(255) NULL,
   FOREIGN KEY (DealerId) REFERENCES Dealers(Id)
 );
 

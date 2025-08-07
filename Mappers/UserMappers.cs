@@ -16,9 +16,9 @@ namespace api.Mappers
                 Id = user.Id,
                 DealerId = user.DealerId,
                 Name = user.Name,
-                Email = user.Email,
+                Email = user.Email!,
                 Phone = user.Phone,
-                Dealer = user.Dealer
+                // Dealer = user.Dealer
             };
         }
     }

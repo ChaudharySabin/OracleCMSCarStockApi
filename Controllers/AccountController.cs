@@ -81,17 +81,17 @@ namespace api.Controllers
         {
             // Lookup the user first
             var user = await _userManager.FindByEmailAsync(loginDto.Email);
-
+        
             if (user == null)
             {
-                return Unauthorized("Invalid email or password.");
+                return Unauthorized("Email is incorrect.");
             }
 
             var validUser = await _userManager.CheckPasswordAsync(user, loginDto.Password);
 
             if (!validUser)
             {
-                return Unauthorized("Invalid email or password.");
+                return Unauthorized("Password is incorrect.");
             }
 
             string jwtToken = await _tokenService.CreateToken(user);

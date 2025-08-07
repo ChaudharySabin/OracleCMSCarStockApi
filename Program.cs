@@ -15,6 +15,7 @@ using System.Data;
 using Microsoft.Data.Sqlite;
 using api.EFcore.Repository;
 using api.Repository.Dapper;
+using api.Stores;
 
 
 
@@ -57,8 +58,8 @@ builder.Services.AddSwaggerGen(option =>
 //     o.UseSqlServer(builder.Configuration.GetConnectionString("SQLSERVERCONNECTION")));
 
 //SqlLite Connection
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("SQLITECONNECTION")));
+// builder.Services.AddDbContext<ApplicationDbContext>(options =>
+// options.UseSqlite(builder.Configuration.GetConnectionString("SQLITECONNECTION")));
 
 
 //In-Memory Database Connection
@@ -93,12 +94,25 @@ builder.Services.AddIdentity<User, IdentityRole<int>>(options =>
         options.Password.RequireUppercase = true;
         options.Password.RequireNonAlphanumeric = true;
         options.Password.RequiredLength = 8;
+        options.Tokens.PasswordResetTokenProvider = TokenOptions.DefaultPhoneProvider;
 
     })
-    .AddEntityFrameworkStores<ApplicationDbContext>()
+    // .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddUserStore<UserDapperStore>()
+    .AddRoleStore<RoleDapperStore>()
     .AddDefaultTokenProviders();
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+builder.Services.AddAuthentication(
+    options =>
+    {
+        options.DefaultAuthenticateScheme =
+     options.DefaultChallengeScheme =
+     options.DefaultForbidScheme =
+     options.DefaultScheme =
+     options.DefaultSignInScheme =
+     options.DefaultSignOutScheme = JwtBearerDefaults.AuthenticationScheme;
+    }
+)
     .AddJwtBearer(options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
