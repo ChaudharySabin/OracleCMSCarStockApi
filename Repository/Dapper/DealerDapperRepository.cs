@@ -18,47 +18,124 @@ namespace api.Repository.Dapper
         {
             _db = db;
         }
+
+        /// <summary>
+        /// Creates a new dealer in the database.
+        /// </summary>
+        /// <param name="dealer">The dealer to create.</param>
+        /// <returns>
+        /// The created dealer.
+        /// </returns>
         public async Task<Dealer> CreateDealerAsync(Dealer dealer)
         {
-            var sql = "Insert into Dealers (Name, Description) Values (@Name, @Description); Select last_insert_rowid();";
-            var id = await _db.ExecuteScalarAsync<int>(sql, new { dealer.Name, dealer.Description });
+            var concurrencyStamp = Guid.NewGuid().ToString();
+            var sql = "Insert into Dealers (Name, Description, ConcurrencyStamp) Values (@Name, @Description, @ConcurrencyStamp); Select last_insert_rowid();";
+            var id = await _db.ExecuteScalarAsync<int>(sql, new { Name = dealer.Name, Description = dealer.Description, ConcurrencyStamp = concurrencyStamp });
             dealer.Id = id;
             return dealer;
         }
 
+        /// <summary>
+        /// Deletes a dealer by its ID.
+        /// </summary>
+        /// <param name="id">The ID of the dealer to delete.</param>
+        /// <returns>The deleted dealer, or null if not found.</returns>
+        /// <exception cref="Exception"></exception>
         public async Task<Dealer?> DeleteDealerAsync(int id)
         {
-            var sql = "Delete from Dealers where Id = @Id";
-            var affectedRows = await _db.ExecuteAsync(sql, new { Id = id });
-            if (affectedRows == 0)
+            Dealer? dealer = await GetDealerByIdAsync(id);
+            if (dealer == null)
             {
                 return null;
+            }
+
+            // Cascading delete is not on by default in SQLite, so we need to handle it manually.
+            // We are dealing with multiple tables, so we are creating a transaction and commiting it only if everything goes well.
+            // If something goes wrong, we will rollback the transaction.
+            var transaction = _db.BeginTransaction();
+            try
+            {
+                // Delete all cars associated with the dealer
+
+                var oldConcurrencyStamp = dealer.ConcurrencyStamp;
+                var sql = "Delete from Dealers where Id = @Id and ConcurrencyStamp = @ConcurrencyStamp";
+                var affectedRows = await _db.ExecuteAsync(sql, new { Id = id, ConcurrencyStamp = oldConcurrencyStamp });
+                if (affectedRows == 0)
+                {
+                    throw new Exception("Something went wrong when deleting the dealer.");
+                }
+                var deleteCarsSql = "Delete from Cars where DealerId = @DealerId";
+                var result = await _db.ExecuteAsync(deleteCarsSql, new { DealerId = id });
+                if (affectedRows == 0)
+                {
+                    throw new Exception("Something went wrong when deleting the dealer's cars.");
+                }
+
+                transaction.Commit();
+            }
+            catch (Exception)
+            {
+                transaction.Rollback();
+                throw new Exception("Something went wrong when deleting the dealer and its cars."); // This error will be sent to the controller to show server error
             }
             return new Dealer { Id = id };
         }
 
+        /// <summary>
+        /// Retrieves all dealers from the database.
+        /// </summary>
+        /// <returns>A list of all dealers.</returns>
         public async Task<IEnumerable<Dealer>> GetAllDealersAsync()
         {
             var sql = "Select Id, Name, Description from Dealers";
             return await _db.QueryAsync<Dealer>(sql);
         }
 
+        /// <summary>
+        /// Retrieves a dealer by its ID.
+        /// </summary>
+        /// <param name="id">The ID of the dealer to retrieve.</param>
+        /// <returns>The dealer with the specified ID, or null if not found.</returns>
         public async Task<Dealer?> GetDealerByIdAsync(int id)
         {
-            var sql = "Select Id, Name, Description from Dealers where Id = @Id";
+            var sql = "Select Id, Name, Description, ConcurrencyStamp from Dealers where Id = @Id";
             return await _db.QuerySingleOrDefaultAsync<Dealer>(sql, new { Id = id });
         }
 
-
+        /// <summary>
+        /// Updates a dealer's information.
+        /// </summary>
+        /// <param name="id">The ID of the dealer to update.</param>
+        /// <param name="name">The new name of the dealer.</param>
+        /// <param name="description">The new description of the dealer.</param>
+        /// <returns>The updated dealer, or null if not found.</returns>
         public async Task<Dealer?> UpdateDealerAsync(int id, string name, string? description)
         {
-            string sql = "Update Dealers set Name=@Name, Description = @description where Id = @Id";
-            var affectedRows = await _db.ExecuteAsync(sql, new { Id = id, Name = name, Description = description });
+            var dealer = await GetDealerByIdAsync(id);
+            if (dealer == null)
+            {
+                return null;
+            }
+
+            var oldConcurrencyStamp = dealer.ConcurrencyStamp;
+            var newConcurrencyStamp = Guid.NewGuid().ToString();
+            string sql = "Update Dealers set Name=@Name, Description = @description, ConcurrencyStamp = @NewConCurrencyStamp where Id = @Id and ConcurrencyStamp = @OldConcurrencyStamp";
+            var affectedRows = await _db.ExecuteAsync(sql, new
+            {
+                Id = id,
+                Name = name,
+                Description = description,
+                NewConCurrencyStamp = newConcurrencyStamp,
+                OldConcurrencyStamp = oldConcurrencyStamp
+            });
+
+
             if (affectedRows == 0)
             {
                 return null;
             }
-            return await GetDealerByIdAsync(id);
+
+            return await GetDealerByIdAsync(id);  // Or we can use dealer.Name = name; dealer.Description = description;, dealer.ConcurrencyStamp = newConcurrencyStamp; in order to avoid another query
         }
     }
 }

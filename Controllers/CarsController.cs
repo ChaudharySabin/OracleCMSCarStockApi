@@ -42,7 +42,7 @@ namespace api.Controllers
         [Authorize(Roles = "SuperAdmin,Dealer")]
         public async Task<ActionResult<IEnumerable<CarReturnDto>>> GetAllCars()
         {
-            var cars = await _carRepo.GetAllCars();
+            var cars = await _carRepo.GetAllCarsAsync();
             if (User.IsInRole("SuperAdmin"))
             {
                 var carDtos = cars.Select(car => car.ToCarReturnDto()).ToList();
@@ -77,7 +77,7 @@ namespace api.Controllers
             // If the user is a SuperAdmin, they can access any car
             if (User.IsInRole("SuperAdmin"))
             {
-                var car = await _carRepo.GetCarById(id);
+                var car = await _carRepo.GetCarByIdAsync(id);
                 if (car == null)
                 {
                     return NotFound();
@@ -90,7 +90,7 @@ namespace api.Controllers
             {
                 return StatusCode(StatusCodes.Status403Forbidden, "Dealer is not assigned, Please contact admin");
             }
-            var carFiltered = await _carRepo.GetCarByIdWithDealer(id, dealerId);
+            var carFiltered = await _carRepo.GetCarByIdWithDealerAsync(id, dealerId);
             // If the user is a Dealer, they can only access cars associated with their dealer ID
 
             //For simiplicity, we can check car == null || car.DealerId != dealerId
@@ -123,7 +123,7 @@ namespace api.Controllers
                 return StatusCode(StatusCodes.Status403Forbidden, "Dealer is not assigned, Please contact admin");
             }
             var car = carCreateDto.ToCarFromCreateDto(dealerId);
-            var createdCar = await _carRepo.CreateCar(car);
+            var createdCar = await _carRepo.CreateCarAsync(car);
             return CreatedAtAction(nameof(GetCarById), new { id = createdCar.Id }, createdCar.ToCarReturnDto());
         }
 
@@ -145,12 +145,12 @@ namespace api.Controllers
             // If the user is a SuperAdmin, they can update any car without a dealer ID
             if (User.IsInRole("SuperAdmin"))
             {
-                var carFullAccess = await _carRepo.GetCarById(id);
+                var carFullAccess = await _carRepo.GetCarByIdAsync(id);
                 if (carFullAccess == null)
                 {
                     return NotFound();
                 }
-                await _carRepo.UpdateCar(id, carUpdateDto.Make, carUpdateDto.Model, carUpdateDto.Year);
+                await _carRepo.UpdateCarAsync(id, carUpdateDto.Make, carUpdateDto.Model, carUpdateDto.Year);
                 return carFullAccess.ToCarReturnDto();
             }
 
@@ -160,7 +160,7 @@ namespace api.Controllers
             {
                 return StatusCode(StatusCodes.Status403Forbidden, "Dealer is not assigned, Please contact admin");
             }
-            var car = await _carRepo.GetCarByIdWithDealer(id, dealerId);
+            var car = await _carRepo.GetCarByIdWithDealerAsync(id, dealerId);
             // If the user is a Dealer, they can only update cars associated with their dealer ID
             if (car == null)
             {
@@ -170,7 +170,7 @@ namespace api.Controllers
             {
                 return Forbid();
             }
-            await _carRepo.UpdateCar(id, carUpdateDto.Make, carUpdateDto.Model, carUpdateDto.Year);
+            await _carRepo.UpdateCarAsync(id, carUpdateDto.Make, carUpdateDto.Model, carUpdateDto.Year);
             return car.ToCarReturnDto();
         }
 
@@ -188,7 +188,7 @@ namespace api.Controllers
         public async Task<IActionResult> UpdateCarDealer([FromRoute] int id, [FromBody] CarDealerUpdateDto dealerUpdateDto) //CarDealerUpdateDto: to apply required annotation. Can also be done by embeding in to the route
         {
 
-            var (car, dealer) = await _carRepo.UpdateCarDealer(id, dealerUpdateDto.DealderId);
+            var (car, dealer) = await _carRepo.UpdateCarDealerAsync(id, dealerUpdateDto.DealderId);
             if (car == null)
             {
                 return NotFound("The Car Record was not found");
@@ -218,12 +218,12 @@ namespace api.Controllers
         {
             if (User.IsInRole("SuperAdmin"))
             {
-                var car = await _carRepo.GetCarById(id);
+                var car = await _carRepo.GetCarByIdAsync(id);
                 if (car == null)
                 {
                     return NotFound();
                 }
-                await _carRepo.UpdateCarStock(id, stock.Stock);
+                await _carRepo.UpdateCarStockAsync(id, stock.Stock);
                 return car.ToCarReturnDto();
             }
 
@@ -234,7 +234,7 @@ namespace api.Controllers
                 return StatusCode(StatusCodes.Status403Forbidden, "Dealer is not assigned, Please contact admin");
             }
 
-            var carFilteredWithDealer = await _carRepo.GetCarByIdWithDealer(id, dealerId);
+            var carFilteredWithDealer = await _carRepo.GetCarByIdWithDealerAsync(id, dealerId);
             if (carFilteredWithDealer == null)
             {
 
@@ -242,7 +242,7 @@ namespace api.Controllers
 
             }
 
-            await _carRepo.UpdateCarStock(id, stock.Stock);
+            await _carRepo.UpdateCarStockAsync(id, stock.Stock);
             return carFilteredWithDealer.ToCarReturnDto();
         }
 
@@ -258,12 +258,12 @@ namespace api.Controllers
         {
             if (User.IsInRole("SuperAdmin"))
             {
-                var car = await _carRepo.GetCarById(id);
+                var car = await _carRepo.GetCarByIdAsync(id);
                 if (car == null)
                 {
                     return NotFound();
                 }
-                await _carRepo.RemoveCar(id);
+                await _carRepo.RemoveCarAsync(id);
                 return NoContent();
             }
 
@@ -274,13 +274,13 @@ namespace api.Controllers
                 return StatusCode(StatusCodes.Status403Forbidden, "Dealer is not assigned, Please contact admin");
 
             }
-            var carfiltered = await _carRepo.GetCarByIdWithDealer(id, dealerId);
+            var carfiltered = await _carRepo.GetCarByIdWithDealerAsync(id, dealerId);
             if (carfiltered == null)
             {
                 return NotFound();
             }
 
-            await _carRepo.RemoveCar(id);
+            await _carRepo.RemoveCarAsync(id);
             return NoContent();
         }
 
@@ -289,7 +289,7 @@ namespace api.Controllers
         [Authorize(Roles = "SuperAdmin,Dealer")]
         public async Task<ActionResult<IEnumerable<CarReturnDto>>> Search([FromQuery] string? make, [FromQuery] string? model)
         {
-            var cars = await _carRepo.SearchByMakeModel(make: make, model: model);
+            var cars = await _carRepo.SearchByMakeModelAsync(make: make, model: model);
             if (User.IsInRole("SuperAdmin"))
             {
                 return cars.Select(c => c.ToCarReturnDto()).ToList();

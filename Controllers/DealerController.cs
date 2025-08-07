@@ -22,6 +22,12 @@ namespace api.Controllers
             _dealerRepo = dealerRepo;
         }
 
+        /// <summary>
+        /// Creates a new dealer.
+        /// Requires SuperAdmin role.
+        /// </summary>
+        /// <param name="dealerCreateDto">The dealer creation data.</param>
+        /// <returns>The created dealer.</returns>
         [HttpPost]
         [Authorize(Roles = "SuperAdmin")]
         public async Task<ActionResult<Dealer>> CreateDealer([FromBody] DealerCreateDto dealerCreateDto)
@@ -31,7 +37,11 @@ namespace api.Controllers
             return Ok(dealerCreated);
         }
 
-
+        /// <summary>
+        /// Retrieves all dealers.
+        /// Requires SuperAdmin role.
+        /// </summary>
+        /// <returns>All dealers.</returns>
         [HttpGet]
         [Authorize(Roles = "SuperAdmin")]
         public async Task<ActionResult<IEnumerable<DealerReturnDto>>> GetAllDealers()
@@ -40,6 +50,13 @@ namespace api.Controllers
             return dealerList.Select(d => d.DealerToReturnDto()).ToList();
         }
 
+        /// <summary>
+        /// Retrieves a dealer by ID.
+        /// Requires SuperAdmin or Dealer role.
+        /// SameDealerPolicy ensures that a dealer can only access their own data for Dealer role.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet("{id:int}")]
         [Authorize(Roles = "SuperAdmin,Dealer", Policy = "SameDealerPolicy")]
         public async Task<ActionResult<DealerReturnDto?>> GetDealerById([FromRoute] int id)
@@ -52,7 +69,12 @@ namespace api.Controllers
             return dealer.DealerToReturnDto();
         }
 
-
+        /// <summary>
+        /// Deletes a dealer by ID.
+        /// Requires SuperAdmin role.
+        /// Deletes the dealer together with all associated cars.
+        /// </summary>
+        /// <param name="id"></param>
         [HttpDelete("{id:int}")]
         [Authorize(Roles = "SuperAdmin")]
         public async Task<IActionResult> DeleteDealerByID([FromRoute] int id)
@@ -67,7 +89,14 @@ namespace api.Controllers
             return NoContent();
         }
 
-
+        /// <summary>
+        /// Updates a dealer's information.
+        /// Requires SuperAdmin or Dealer role.
+        /// SameDealerPolicy ensures that a dealer can only update their own data for Dealer role.
+        /// </summary>
+        /// <param name="id">The ID of the dealer to update.</param>
+        /// <param name="dealerUpdateDto">The updated dealer information.</param>
+        /// <returns>The updated dealer.</returns>
         [HttpPut("{id:int}")]
         [Authorize(Roles = "SuperAdmin,Dealer", Policy = "SameDealerPolicy")]
         public async Task<ActionResult<DealerReturnDto?>> UpdateDealer([FromRoute] int id, DealerUpdateDto dealerUpdateDto)

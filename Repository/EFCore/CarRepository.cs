@@ -22,7 +22,7 @@ namespace api.EFcore.Repository
         }
 
 
-        public async Task<Car> CreateCar(Car car)
+        public async Task<Car> CreateCarAsync(Car car)
         {
             await _context.Cars.AddAsync(car);
 
@@ -31,23 +31,23 @@ namespace api.EFcore.Repository
             return car;
         }
 
-        public async Task<IEnumerable<Car>> GetAllCars()
+        public async Task<IEnumerable<Car>> GetAllCarsAsync()
         {
             return await _context.Cars.ToListAsync();
 
         }
 
-        public async Task<Car?> GetCarById(int id)
+        public async Task<Car?> GetCarByIdAsync(int id)
         {
             return await _context.Cars.FindAsync(id);
         }
 
-        public async Task<Car?> GetCarByIdWithDealer(int id, int dealerId)
+        public async Task<Car?> GetCarByIdWithDealerAsync(int id, int dealerId)
         {
             return await _context.Cars.FirstOrDefaultAsync(c => c.Id == id && c.DealerId == dealerId);
         }
 
-        public async Task<Car?> RemoveCar(int id)
+        public async Task<Car?> RemoveCarAsync(int id)
         {
 
             Car? car = _context.Cars.Find(id);
@@ -62,7 +62,7 @@ namespace api.EFcore.Repository
             return car;
         }
 
-        public async Task<IEnumerable<Car>> SearchByMakeModel(string? make, string? model)
+        public async Task<IEnumerable<Car>> SearchByMakeModelAsync(string? make, string? model)
         {
             var car = await _context.Cars.ToListAsync();
 
@@ -83,9 +83,9 @@ namespace api.EFcore.Repository
             return result;
         }
 
-        public async Task<Car?> UpdateCar(int id, string make, string model, int year)
+        public async Task<Car?> UpdateCarAsync(int id, string make, string model, int year)
         {
-            var car = await this.GetCarById(id);
+            var car = await _context.Cars.FindAsync(id);
             if (car == null)
             {
                 return null;
@@ -101,7 +101,7 @@ namespace api.EFcore.Repository
 
         }
 
-        public async Task<(Car?, Dealer?)> UpdateCarDealer(int id, int dealerId)
+        public async Task<(Car?, Dealer?)> UpdateCarDealerAsync(int id, int dealerId)
         {
             var car = await _context.Cars.FindAsync(id);
             if (car == null)
@@ -122,7 +122,7 @@ namespace api.EFcore.Repository
             return (car, dealer);
         }
 
-        public async Task<Car?> UpdateCarStock(int id, int stock)
+        public async Task<Car?> UpdateCarStockAsync(int id, int stock)
         {
             var car = await _context.Cars.FindAsync(id);
             if (car == null)

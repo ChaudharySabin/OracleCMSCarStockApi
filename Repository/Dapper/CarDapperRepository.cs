@@ -25,7 +25,7 @@ namespace api.Repository.Dapper
         /// <returns>
         /// A list of all cars with their dealer names.
         /// </returns>
-        public async Task<IEnumerable<Car>> GetAllCars()
+        public async Task<IEnumerable<Car>> GetAllCarsAsync()
         {
             // Using a left join to include dealer names in the car list
             var car = await _db.QueryAsync<Car>(
@@ -43,7 +43,7 @@ namespace api.Repository.Dapper
         /// <returns>
         /// The car with the specified ID, or null if not found.
         /// </returns>
-        public async Task<Car?> GetCarById(int id)
+        public async Task<Car?> GetCarByIdAsync(int id)
         {
             // Using a left join to include dealer names in the car details
             var car = await _db.QuerySingleOrDefaultAsync<Car>(
@@ -54,7 +54,7 @@ namespace api.Repository.Dapper
         }
 
 
-        public async Task<Car?> GetCarByIdWithDealer(int id, int dealerId)
+        public async Task<Car?> GetCarByIdWithDealerAsync(int id, int dealerId)
         {
             // Using a left join to include dealer names in the car details
             var car = await _db.QuerySingleOrDefaultAsync<Car>(
@@ -70,7 +70,7 @@ namespace api.Repository.Dapper
         /// <param name="car">The car to create.</param>
         /// <returns>
         /// The created car object.
-        public async Task<Car> CreateCar(Car car)
+        public async Task<Car> CreateCarAsync(Car car)
         {
             //We have added a ConcurrencyStamp to the Car model to handle concurrency issues similar to how ASP.NET Identity handles concurrency.
             var ConcurrencyStamp = Guid.NewGuid().ToString();
@@ -95,10 +95,10 @@ namespace api.Repository.Dapper
         /// <returns>
         /// The updated car object, or null if the update failed.
         /// </returns>
-        public async Task<Car?> UpdateCar(int id, string make, string model, int Year)
+        public async Task<Car?> UpdateCarAsync(int id, string make, string model, int Year)
         {
             // Check if the car exists
-            var existingCar = await GetCarById(id);
+            var existingCar = await GetCarByIdAsync(id);
             if (existingCar == null)
             {
                 return null; // Car not found
@@ -119,7 +119,7 @@ namespace api.Repository.Dapper
             }
             // Commit the transaction if the update was successful
 
-            return await GetCarById(id);
+            return await GetCarByIdAsync(id);
         }
 
 
@@ -131,10 +131,10 @@ namespace api.Repository.Dapper
         /// <returns>
         /// A tuple containing the updated car object and the associated dealer object, or null if the car or dealer was not found.
         /// </returns>
-        public async Task<(Car?, Dealer?)> UpdateCarDealer(int id, int dealerId)
+        public async Task<(Car?, Dealer?)> UpdateCarDealerAsync(int id, int dealerId)
         {
 
-            var car = await GetCarById(id);
+            var car = await GetCarByIdAsync(id);
             if (car == null)
             {
                 return (null, null);
@@ -172,10 +172,10 @@ namespace api.Repository.Dapper
         /// <returns>
         /// The updated car object with the new stock value, or null if the car was not found.
         /// </returns>
-        public async Task<Car?> UpdateCarStock(int id, int stock)
+        public async Task<Car?> UpdateCarStockAsync(int id, int stock)
         {
             // Check if the car exists
-            var existingCar = await GetCarById(id);
+            var existingCar = await GetCarByIdAsync(id);
             if (existingCar == null)
             {
                 return null; // Car not found
@@ -205,10 +205,10 @@ namespace api.Repository.Dapper
         /// <returns>
         /// The removed car object if successful, or null if the car was not found.
         /// </returns>
-        public async Task<Car?> RemoveCar(int id)
+        public async Task<Car?> RemoveCarAsync(int id)
         {
             // Check if the car exists
-            var existingCar = await GetCarById(id);
+            var existingCar = await GetCarByIdAsync(id);
             if (existingCar == null)
             {
                 return null; // Car not found
@@ -222,7 +222,7 @@ namespace api.Repository.Dapper
                 throw new Exception("Something went wrong while deleting the car.");
             }
 
-            return await GetCarById(id);
+            return await GetCarByIdAsync(id);
         }
 
         /// <summary>
@@ -233,7 +233,7 @@ namespace api.Repository.Dapper
         /// <returns>
         /// An enumerable collection of cars that match the search criteria.
         /// </returns>
-        public async Task<IEnumerable<Car>> SearchByMakeModel(string? make, string? model)
+        public async Task<IEnumerable<Car>> SearchByMakeModelAsync(string? make, string? model)
         {
             // The 1=1 conditions is used here for easiy chaining of and conditions in the SQL query.
             var sql = "Select * from Cars where 1=1";

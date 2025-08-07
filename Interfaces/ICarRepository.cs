@@ -9,20 +9,20 @@ namespace api.Interfaces
 {
     public interface ICarRepository
     {
-        public Task<IEnumerable<Car>> GetAllCars();
-        public Task<Car?> GetCarById(int id);
+        public Task<IEnumerable<Car>> GetAllCarsAsync();
+        public Task<Car?> GetCarByIdAsync(int id);
 
-        public Task<Car?> GetCarByIdWithDealer(int id, int dealerId);
+        public Task<Car?> GetCarByIdWithDealerAsync(int id, int dealerId);
 
-        public Task<Car> CreateCar(Car car);
+        public Task<Car> CreateCarAsync(Car car);
 
-        public Task<Car?> UpdateCar(int id, string make, string model, int Year);
-        public Task<(Car?, Dealer?)> UpdateCarDealer(int id, int dealerId);
+        public Task<Car?> UpdateCarAsync(int id, string make, string model, int Year);
+        public Task<(Car?, Dealer?)> UpdateCarDealerAsync(int id, int dealerId);
 
-        public Task<Car?> UpdateCarStock(int id, int stock);
+        public Task<Car?> UpdateCarStockAsync(int id, int stock);
 
-        public Task<Car?> RemoveCar(int id);
+        public Task<Car?> RemoveCarAsync(int id);
 
-        public Task<IEnumerable<Car>> SearchByMakeModel(string? make, string? model);
+        public Task<IEnumerable<Car>> SearchByMakeModelAsync(string? make, string? model);
     }
 }

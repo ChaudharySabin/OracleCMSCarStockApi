@@ -52,19 +52,6 @@ builder.Services.AddSwaggerGen(option =>
 });
 // Till Here
 
-//DBcontext
-//SQLSERVERConnection
-// builder.Services.AddDbContext<ApplicationDbContext>(o =>
-//     o.UseSqlServer(builder.Configuration.GetConnectionString("SQLSERVERCONNECTION")));
-
-//SqlLite Connection
-// builder.Services.AddDbContext<ApplicationDbContext>(options =>
-// options.UseSqlite(builder.Configuration.GetConnectionString("SQLITECONNECTION")));
-
-
-//In-Memory Database Connection
-// builder.Services.AddDbContext<ApplicationDbContext>(o =>
-//         o.UseInMemoryDatabase("CarStockInMemDb"));
 
 
 //Transient Connection For Dapper
@@ -305,3 +292,18 @@ app.Run();
 //     o.UseSqlServer(builder.Configuration.GetConnectionString("SQLSERVERCONNECTION")));
 // }
 //TIll here
+
+
+//DBcontext
+//SQLSERVERConnection
+// builder.Services.AddDbContext<ApplicationDbContext>(o =>
+//     o.UseSqlServer(builder.Configuration.GetConnectionString("SQLSERVERCONNECTION")));
+
+//SqlLite Connection
+// builder.Services.AddDbContext<ApplicationDbContext>(options =>
+// options.UseSqlite(builder.Configuration.GetConnectionString("SQLITECONNECTION")));
+
+
+//In-Memory Database Connection
+// builder.Services.AddDbContext<ApplicationDbContext>(o =>
+//         o.UseInMemoryDatabase("CarStockInMemDb"));
