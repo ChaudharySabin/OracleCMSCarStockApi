@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using api.Data;
 using api.Interfaces;
-using api.Repository;
 using api.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -14,12 +13,14 @@ using api.Handlers;
 using api.Configuration;
 using System.Data;
 using Microsoft.Data.Sqlite;
+using api.EFcore.Repository;
+using api.Repository.Dapper;
 
 
 
 var builder = WebApplication.CreateBuilder(args);
 
-// builder.Services.AddOpenApi();
+
 //Adding Swagger UI with Authorize button
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(option =>
@@ -51,30 +52,13 @@ builder.Services.AddSwaggerGen(option =>
 // Till Here
 
 //DBcontext
-
-
-//Can Be Removed from here will do later
-// var useInMemory = builder.Configuration.GetValue<bool>("UseInMemoryDatabase");
-// if (useInMemory)
-// {
-//     builder.Services.AddDbContext<ApplicationDbContext>(o =>
-//         o.UseInMemoryDatabase("CarStockInMemDb"));
-// }
-// else
-// {
-// builder.Services.AddDbContext<ApplicationDbContext>(o =>
-//     o.UseSqlServer(builder.Configuration.GetConnectionString("SQLSERVERCONNECTION")));
-// }
-//TIll here
-
-
 //SQLSERVERConnection
 // builder.Services.AddDbContext<ApplicationDbContext>(o =>
 //     o.UseSqlServer(builder.Configuration.GetConnectionString("SQLSERVERCONNECTION")));
 
 //SqlLite Connection
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("SQLLITECONNECTION")));
+    options.UseSqlite(builder.Configuration.GetConnectionString("SQLITECONNECTION")));
 
 
 //In-Memory Database Connection
@@ -83,21 +67,19 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 
 //Transient Connection For Dapper
-builder.Services.AddTransient<IDbConnection>(sp =>
+builder.Services.AddScoped<IDbConnection>(sp =>
 {
     var connection = new SqliteConnection(builder.Configuration.GetConnectionString("SQLITECONNECTION"));
     connection.Open();
     return connection;
 });
 
-
-
 builder.Services.AddControllers();
 
 //DI
-builder.Services.AddScoped<ICarRepository, CarRepository>();
-builder.Services.AddScoped<IDealerRepository, DealerRepository>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<ICarRepository, CarDapperRepository>();
+builder.Services.AddScoped<IDealerRepository, DealerDapperRepository>();
+builder.Services.AddScoped<IUserRepository, UserDapperRepository>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddSingleton<IAuthorizationHandler, MustBeOwnUserHandler>();
 builder.Services.AddSingleton<IAuthorizationHandler, MustHaveSameDealerIdHandler>();
@@ -116,16 +98,7 @@ builder.Services.AddIdentity<User, IdentityRole<int>>(options =>
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
-builder.Services.AddAuthentication(options =>
-    {
-        options.DefaultAuthenticateScheme =
-        options.DefaultChallengeScheme =
-        options.DefaultForbidScheme =
-        options.DefaultScheme =
-        options.DefaultSignInScheme =
-        options.DefaultSignOutScheme = JwtBearerDefaults.AuthenticationScheme;
-
-    })
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
@@ -275,28 +248,46 @@ app.Run();
 //         }
 //     }
 
-//     // 6) Seed one Car per Dealer (10 Cars total)
-//     if (!ctx.Cars.Any())
-//     {
-//         var allDealers = ctx.Dealers.ToList();
-//         var rnd = new Random();
-//         var makes = new[] { "Toyota", "Honda", "Ford", "BMW", "Audi", "Kia", "Hyundai", "Nissan", "Chevrolet", "Mazda" };
-//         var models = new[] { "Sedan", "SUV", "Coupe", "Hatch", "Wagon", "Truck", "Van", "Convert", "Hybrid", "Electric" };
+// 6) Seed one Car per Dealer (10 Cars total)
+// if (!ctx.Cars.Any())
+// {
+//     var allDealers = ctx.Dealers.ToList();
+//     var rnd = new Random();
+//     var makes = new[] { "Toyota", "Honda", "Ford", "BMW", "Audi", "Kia", "Hyundai", "Nissan", "Chevrolet", "Mazda" };
+//     var models = new[] { "Sedan", "SUV", "Coupe", "Hatch", "Wagon", "Truck", "Van", "Convert", "Hybrid", "Electric" };
 
-//         var cars = allDealers
-//         .SelectMany(dealer =>
-//             Enumerable.Range(1, 10).Select(i => new Car
-//             {
-//                 Make = makes[rnd.Next(makes.Length)],
-//                 Model = models[rnd.Next(models.Length)],
-//                 Year = rnd.Next(2000, DateTime.Now.Year + 1),
-//                 Stock = rnd.Next(1, 100),
-//                 DealerId = dealer.Id
-//             })
-//         )
-//         .ToList();
+//     var cars = allDealers
+//     .SelectMany(dealer =>
+//         Enumerable.Range(1, 10).Select(i => new Car
+//         {
+//             Make = makes[rnd.Next(makes.Length)],
+//             Model = models[rnd.Next(models.Length)],
+//             Year = rnd.Next(2000, DateTime.Now.Year + 1),
+//             Stock = rnd.Next(1, 100),
+//             DealerId = dealer.Id
+//         })
+//     )
+//     .ToList();
 
-//         ctx.Cars.AddRange(cars);
-//         ctx.SaveChanges();
-//     }
+//     ctx.Cars.AddRange(cars);
+//     ctx.SaveChanges();
 // }
+// }
+
+
+
+//Additional Codes that were commented
+// builder.Services.AddOpenApi();
+//Can Be Removed from here will do later
+// var useInMemory = builder.Configuration.GetValue<bool>("UseInMemoryDatabase");
+// if (useInMemory)
+// {
+//     builder.Services.AddDbContext<ApplicationDbContext>(o =>
+//         o.UseInMemoryDatabase("CarStockInMemDb"));
+// }
+// else
+// {
+// builder.Services.AddDbContext<ApplicationDbContext>(o =>
+//     o.UseSqlServer(builder.Configuration.GetConnectionString("SQLSERVERCONNECTION")));
+// }
+//TIll here

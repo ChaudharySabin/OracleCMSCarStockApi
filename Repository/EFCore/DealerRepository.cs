@@ -7,7 +7,7 @@ using api.Interfaces;
 using api.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace api.Repository
+namespace api.EFcore.Repository
 {
     public class DealerRepository : IDealerRepository
     {

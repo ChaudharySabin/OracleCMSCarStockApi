@@ -10,7 +10,7 @@ using api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace api.Repository
+namespace api.EFcore.Repository
 {
     public class CarRepository : ICarRepository
     {
