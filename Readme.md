@@ -140,4 +140,4 @@ docker run -d \
   chaudharysabin/carstockapi:latest
 ```
 
-\*\*(Note: Please run Smpt4dev when running the docker image like this or you can run smtp4dev as a docker service)
+**(Note: Please run Smpt4dev when running the docker image like this or you can run smtp4dev as a docker service)**
