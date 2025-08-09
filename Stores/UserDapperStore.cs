@@ -36,7 +36,7 @@ namespace api.Stores
             if (string.IsNullOrEmpty(roleName)) throw new ArgumentNullException(nameof(roleName));
 
             var sql = "Select Id from AspNetRoles where NormalizedName = @NormalizedName";
-            var roleId = await _db.ExecuteScalarAsync<int?>(sql, new { NormalizedName = roleName }); //Rolenames are nor
+            var roleId = await _db.ExecuteScalarAsync<int?>(sql, new { NormalizedName = roleName.ToUpperInvariant() }); //Rolenames are nor
             if (roleId == null) throw new ArgumentException("Role not found.", nameof(roleName));
 
             var insertSql = "Insert into AspNetUserRoles (UserId, RoleId) Values (@UserId, @RoleId)";

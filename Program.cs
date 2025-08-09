@@ -54,7 +54,7 @@ builder.Services.AddSwaggerGen(option =>
 
 
 
-//Transient Connection For Dapper
+//Scoped Connection For Dapper
 builder.Services.AddScoped<IDbConnection>(sp =>
 {
     var connection = new SqliteConnection(builder.Configuration.GetConnectionString("SQLITECONNECTION"));
@@ -62,6 +62,7 @@ builder.Services.AddScoped<IDbConnection>(sp =>
     return connection;
 });
 
+//Adding Controllers
 builder.Services.AddControllers();
 
 //DI
@@ -71,6 +72,9 @@ builder.Services.AddScoped<IUserRepository, UserDapperRepository>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddSingleton<IAuthorizationHandler, MustBeOwnUserHandler>();
 builder.Services.AddSingleton<IAuthorizationHandler, MustHaveSameDealerIdHandler>();
+
+//Hosted Service for Database Initialization
+builder.Services.AddHostedService<DatabaseInitializerHostedService>();
 
 
 //Identity
@@ -85,8 +89,8 @@ builder.Services.AddIdentity<User, IdentityRole<int>>(options =>
 
     })
     // .AddEntityFrameworkStores<ApplicationDbContext>()
-    .AddUserStore<UserDapperStore>()
-    .AddRoleStore<RoleDapperStore>()
+    .AddUserStore<UserDapperStore>() // Changed to manual implementation of UserStore using Dapper
+    .AddRoleStore<RoleDapperStore>() // Changed to manual implementation of RoleStore using Dapper
     .AddDefaultTokenProviders();
 
 builder.Services.AddAuthentication(
@@ -156,11 +160,12 @@ app.UseAuthorization();
 app.Run();
 
 
-// Seed data
+
+// Seed data For EF Core which is not used in this project
 // async Task SeedDataAsync(WebApplication app)
 // {
 //     using var scope = app.Services.CreateScope();
-//     var ctx = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+//     var ctx = scope.ServiceProvider.GetRequiredService<IDbConnection>();
 //     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
 //     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<int>>>();
 
@@ -249,36 +254,37 @@ app.Run();
 //         }
 //     }
 
-// 6) Seed one Car per Dealer (10 Cars total)
-// if (!ctx.Cars.Any())
-// {
-//     var allDealers = ctx.Dealers.ToList();
-//     var rnd = new Random();
-//     var makes = new[] { "Toyota", "Honda", "Ford", "BMW", "Audi", "Kia", "Hyundai", "Nissan", "Chevrolet", "Mazda" };
-//     var models = new[] { "Sedan", "SUV", "Coupe", "Hatch", "Wagon", "Truck", "Van", "Convert", "Hybrid", "Electric" };
+//     // 6) Seed one Car per Dealer(10 Cars total)
+//     if (!ctx.Cars.Any())
+//     {
+//         var allDealers = ctx.Dealers.ToList();
+//         var rnd = new Random();
+//         var makes = new[] { "Toyota", "Honda", "Ford", "BMW", "Audi", "Kia", "Hyundai", "Nissan", "Chevrolet", "Mazda" };
+//         var models = new[] { "Sedan", "SUV", "Coupe", "Hatch", "Wagon", "Truck", "Van", "Convert", "Hybrid", "Electric" };
 
-//     var cars = allDealers
-//     .SelectMany(dealer =>
-//         Enumerable.Range(1, 10).Select(i => new Car
-//         {
-//             Make = makes[rnd.Next(makes.Length)],
-//             Model = models[rnd.Next(models.Length)],
-//             Year = rnd.Next(2000, DateTime.Now.Year + 1),
-//             Stock = rnd.Next(1, 100),
-//             DealerId = dealer.Id
-//         })
-//     )
-//     .ToList();
+//         var cars = allDealers
+//         .SelectMany(dealer =>
+//             Enumerable.Range(1, 10).Select(i => new Car
+//             {
+//                 Make = makes[rnd.Next(makes.Length)],
+//                 Model = models[rnd.Next(models.Length)],
+//                 Year = rnd.Next(2000, DateTime.Now.Year + 1),
+//                 Stock = rnd.Next(1, 100),
+//                 DealerId = dealer.Id
+//             })
+//         )
+//         .ToList();
 
-//     ctx.Cars.AddRange(cars);
-//     ctx.SaveChanges();
-// }
+//         ctx.Cars.AddRange(cars);
+//         ctx.SaveChanges();
+//     }
 // }
 
 
 
 //Additional Codes that were commented
 // builder.Services.AddOpenApi();
+
 //Can Be Removed from here will do later
 // var useInMemory = builder.Configuration.GetValue<bool>("UseInMemoryDatabase");
 // if (useInMemory)
