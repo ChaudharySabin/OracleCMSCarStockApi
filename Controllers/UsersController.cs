@@ -11,6 +11,7 @@ using api.QueryHelpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
+using System.Runtime.CompilerServices;
 
 namespace api.Controllers
 {
@@ -169,6 +170,14 @@ namespace api.Controllers
 
             return NoContent();
 
+        }
+
+        [HttpGet("list-users-by-role")]
+        [Authorize(Roles = "SuperAdmin")]
+        public async Task<ActionResult<IEnumerable<UserReturnDto>>> GetUsersByRole([FromQuery] string roleName)
+        {
+            var users = await _userRepo.GetUsersByRoleAsync(roleName);
+            return users.Select(u => u.UserToReturnDto()).ToList();
         }
     }
 }

@@ -17,7 +17,7 @@ namespace api.Mappers
                 DealderId = user.DealerId,
                 Name = user.Name,
                 Email = user.Email!,
-                Phone = user.Phone,
+                Phone = user.Phone ?? string.Empty,
                 Token = token,
                 // Dealer = user.Dealer
             };

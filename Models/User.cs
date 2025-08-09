@@ -9,6 +9,7 @@ namespace api.Models
     public class User : IdentityUser<int>
     {
         // public int Id { get; set; }
+
         public string Name { get; set; } = string.Empty;
 
         // public string Email { get; set; } = string.Empty;
@@ -19,6 +20,8 @@ namespace api.Models
 
         public int? DealerId { get; set; }
 
-        // public Dealer? Dealer { get; set; }
+        public string? DealerName { get; set; }
+
+        public string? RoleName { get; set; }
     }
 }

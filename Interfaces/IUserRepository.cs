@@ -19,5 +19,7 @@ namespace api.Interfaces
         Task<User?> UpdateUserAsync(int id, string? username, string? name, string? email, string? phone);
 
         Task<(User?, Dealer?)> UpdateUserDealerIdAsync(int id, int DealerId);
+
+        Task<IEnumerable<User>> GetUsersByRoleAsync(string roleName);
     }
 }

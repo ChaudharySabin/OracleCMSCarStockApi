@@ -121,12 +121,12 @@ namespace api.Repository.Dapper
             var oldConcurrencyStamp = dealer.ConcurrencyStamp;
             var newConcurrencyStamp = Guid.NewGuid().ToString();
             // We are also checking null as ConcurrencyStamp can be null in the database and a simple ConcurrencyStamp = null will never be true 
-            string sql = "Update Dealers set Name=@Name, Description = @description, ConcurrencyStamp = @NewConCurrencyStamp where Id = @Id and (ConcurrencyStamp = @OldConcurrencyStamp or ConcurrencyStamp is null);";
+            string sql = "Update Dealers set Name=@NewName, Description = @NewDescription, ConcurrencyStamp = @NewConCurrencyStamp where Id = @Id and (ConcurrencyStamp = @OldConcurrencyStamp or ConcurrencyStamp is null);";
             var affectedRows = await _db.ExecuteAsync(sql, new
             {
                 Id = id,
-                Name = name,
-                Description = description,
+                NewName = name,
+                NewDescription = description,
                 NewConCurrencyStamp = newConcurrencyStamp,
                 OldConcurrencyStamp = oldConcurrencyStamp
             });

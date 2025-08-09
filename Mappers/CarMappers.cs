@@ -19,7 +19,8 @@ namespace api.Mappers
                 Model = car.Model,
                 Year = car.Year,
                 Stock = car.Stock,
-                DealerId = car.DealerId
+                DealerId = car.DealerId,
+                DealerName = car.DealerName
             };
         }
 

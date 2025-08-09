@@ -20,11 +20,11 @@ namespace api.Mappers
 
         public static DealerReturnDto DealerToReturnDto(this Dealer dealer)
         {
-             return new DealerReturnDto
+            return new DealerReturnDto
             {
                 Id = dealer.Id,
                 Name = dealer.Name,
-                Description = dealer.Description
+                Description = dealer.Description ?? string.Empty,
             };
         }
     }

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using api.Data;
 using api.Interfaces;
 using api.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace api.EFcore.Repository
@@ -13,10 +14,14 @@ namespace api.EFcore.Repository
     {
 
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<User> _userManager;
+        private readonly RoleManager<IdentityRole<int>> _roleManager;
 
-        public UserRepository(ApplicationDbContext context)
+        public UserRepository(ApplicationDbContext context, UserManager<User> userManager, RoleManager<IdentityRole<int>> roleManager)
         {
             _context = context;
+            _userManager = userManager;
+            _roleManager = roleManager;
         }
 
 
@@ -51,6 +56,23 @@ namespace api.EFcore.Repository
         {
             return await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
 
+        }
+
+        public async Task<IEnumerable<User>> GetUsersByRoleAsync(string roleName)
+        {
+            if (string.IsNullOrEmpty(roleName))
+            {
+                throw new ArgumentNullException(nameof(roleName), "Role name cannot be null or empty.");
+            }
+
+            var role = await _roleManager.FindByNameAsync(roleName);
+            if (role == null)
+            {
+                throw new ArgumentException($"Role '{roleName}' does not exist.", nameof(roleName));
+            }
+
+            var usersInRole = await _userManager.GetUsersInRoleAsync(role.Name!);
+            return usersInRole;
         }
 
         public async Task<User?> UpdateUserAsync(int id, string? username, string? fullname, string? email, string? phone)

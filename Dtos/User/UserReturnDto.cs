@@ -9,6 +9,8 @@ namespace api.Dtos.User
     public class UserReturnDto
     {
         public int Id { get; set; }
+
+        public string Username { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
 
         public string Email { get; set; } = string.Empty;
@@ -17,6 +19,8 @@ namespace api.Dtos.User
 
         public int? DealerId { get; set; }
 
-        public Models.Dealer? Dealer { get; set; }
+        public string? DealerName { get; set; }
+
+        public string? RoleName { get; set; }
     }
 }

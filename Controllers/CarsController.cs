@@ -45,6 +45,7 @@ namespace api.Controllers
             var cars = await _carRepo.GetAllCarsAsync();
             if (User.IsInRole("SuperAdmin"))
             {
+
                 var carDtos = cars.Select(car => car.ToCarReturnDto()).ToList();
                 return carDtos;
             }
@@ -82,7 +83,7 @@ namespace api.Controllers
                 {
                     return NotFound();
                 }
-
+                return car.ToCarReturnDto();
             }
 
             var dealerIdClaim = User.FindFirst("dealerId")?.Value;

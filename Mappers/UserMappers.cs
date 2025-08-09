@@ -14,11 +14,13 @@ namespace api.Mappers
             return new UserReturnDto
             {
                 Id = user.Id,
+                Username = user.UserName ?? string.Empty,
                 DealerId = user.DealerId,
                 Name = user.Name,
                 Email = user.Email!,
-                Phone = user.Phone,
-                // Dealer = user.Dealer
+                Phone = user.Phone ?? string.Empty,
+                DealerName = user.DealerName,
+                RoleName = user.RoleName ?? string.Empty
             };
         }
     }

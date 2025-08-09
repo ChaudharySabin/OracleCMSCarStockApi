@@ -78,8 +78,12 @@ namespace api.Repository.Dapper
             "Select last_insert_rowid();";
 
             var id = await _db.ExecuteScalarAsync<int>(sql, new { car.Make, car.Model, car.Year, car.Stock, car.DealerId, ConcurrencyStamp });
+
             car.Id = id;
             car.ConcurrencyStamp = ConcurrencyStamp;
+            // Getting car dealer name
+            var dealerName = await _db.QuerySingleOrDefaultAsync<string>("Select Name from Dealers where Id = @DealerId;", new { DealerId = car.DealerId });
+            car.DealerName = dealerName ?? string.Empty; // Ensure DealerName is not null
 
             return car;
         }
@@ -239,7 +243,7 @@ namespace api.Repository.Dapper
         public async Task<IEnumerable<Car>> SearchByMakeModelAsync(string? make, string? model)
         {
             // The 1=1 conditions is used here for easiy chaining of and conditions in the SQL query.
-            var sql = "Select * from Cars where 1=1";
+            var sql = "Select c.*, d.Name as DealerName from Cars as c left join Dealers as d on c.DealerId = d.Id where 1=1";
             if (!string.IsNullOrEmpty(make))
             {
                 sql += " and Make like @Make";

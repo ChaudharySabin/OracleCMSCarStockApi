@@ -86,8 +86,10 @@ namespace api.Repository.Dapper
         public Task<IEnumerable<User>> GetAllUsersAsync()
         {
             var sql = "Select " +
-                "u.Id as Id, u.Name as Name, u.Email as Email, u.Phone as Phone, u.DealerId, d.Name as DealerName " +
-                "from AspNetUsers as u Left join Dealers as d on u.DealerId = d.Id;";
+                "u.Id as Id, u.UserName as UserName, u.Name as Name, u.Email as Email, u.Phone as Phone, u.DealerId, d.Name as DealerName, r.Name as RoleName " +
+                "from AspNetUsers as u Left join Dealers as d on u.DealerId = d.Id " +
+                "left join AspNetUserRoles as ur on u.Id = ur.UserId " +
+                "left join AspNetRoles as r on ur.RoleId = r.Id;";
             return _db.QueryAsync<User>(sql);
         }
 
@@ -100,9 +102,24 @@ namespace api.Repository.Dapper
         public async Task<User?> GetUserByIdAsync(int id)
         {
             var sql = "Select " +
-                "u.Id as Id, u.Name as Name, u.Email as Email, u.Phone as Phone, u.DealerId, d.Name as DealerName " +
-                "from AspNetUsers as u Left join Dealers as d on u.DealerId = d.Id where u.Id = @Id;";
+                "u.Id as Id, u.UserName as UserName, u.Name as Name, u.Email as Email, u.Phone as Phone, u.DealerId, d.Name as DealerName, r.Name as RoleName, u.ConcurrencyStamp as ConcurrencyStamp " +
+                "from AspNetUsers as u Left join Dealers as d on u.DealerId = d.Id left join AspNetUserRoles as ur on u.Id = ur.UserId " +
+                "left join AspNetRoles as r on ur.RoleId = r.Id " +
+                "where u.Id = @Id;";
             return await _db.QuerySingleOrDefaultAsync<User>(sql, new { Id = id });
+        }
+
+        public async Task<IEnumerable<User>> GetUsersByRoleAsync(string roleName)
+        {
+
+            var sql = "Select " +
+                "u.Id as Id, u.UserName as UserName, u.Name as Name, u.Email as Email, u.Phone as Phone, u.DealerId, d.Name as DealerName, r.Name as RoleName " +
+                "from AspNetUsers as u Left join Dealers as d on u.DealerId = d.Id " +
+                "left join AspNetUserRoles as ur on u.Id = ur.UserId " +
+                "left join AspNetRoles as r on ur.RoleId = r.Id " +
+                "where r.NormalizedName like @RoleName;";
+
+            return await _db.QueryAsync<User>(sql, new { RoleName = $"%{roleName.ToUpperInvariant()}%" });
         }
 
         /// <summary>
@@ -170,8 +187,9 @@ namespace api.Repository.Dapper
                 return (user, null);
             }
             user.DealerId = dealerId;
+            user.DealerName = dealer.Name ?? string.Empty;
             var oldConcurrencyStamp = user.ConcurrencyStamp;
-            var newConcurrencyStamp = Guid.NewGuid().ToString("D");
+            var newConcurrencyStamp = Guid.NewGuid().ToString();
             var updateSql = "Update AspNetUsers set DealerId = @DealerId, ConcurrencyStamp = @NewConcurrencyStamp where Id = @Id and (ConcurrencyStamp = @OldConcurrencyStamp or ConcurrencyStamp is null);";
             var affectedRow = await _db.ExecuteAsync(updateSql, new { DealerId = dealerId, Id = id, NewConcurrencyStamp = newConcurrencyStamp, OldConcurrencyStamp = oldConcurrencyStamp });
             if (affectedRow == 0)

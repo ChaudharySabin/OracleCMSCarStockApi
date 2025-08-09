@@ -56,8 +56,8 @@ namespace api.Stores
             // user.SecurityStamp = Guid.NewGuid().ToString("D");
             user.ConcurrencyStamp = Guid.NewGuid().ToString("D");
 
-            var sql = "Insert into AspNetUsers (UserName, Name, NormalizedUserName, Email, NormalizedEmail, PasswordHash, SecurityStamp, Phone , ConcurrencyStamp) " +
-                       "Values (@UserName, @Name, @NormalizedUserName, @Email, @NormalizedEmail, @PasswordHash, @SecurityStamp, @Phone, @ConcurrencyStamp);" +
+            var sql = "Insert into AspNetUsers (UserName, Name, NormalizedUserName, Email, NormalizedEmail, PasswordHash, SecurityStamp, Phone , ConcurrencyStamp, EmailConfirmed, PhoneNumberConfirmed, TwoFactorEnabled, LockoutEnabled, AccessFailedCount) " +
+                       "Values (@UserName, @Name, @NormalizedUserName, @Email, @NormalizedEmail, @PasswordHash, @SecurityStamp, @Phone, @ConcurrencyStamp, @EmailConfirmed, @PhoneNumberConfirmed, @TwoFactorEnabled, @LockoutEnabled, @AccessFailedCount);" +
                        " SELECT last_insert_rowid();";
             var rowid = await _db.ExecuteScalarAsync<int>(sql, new
             {
@@ -69,7 +69,12 @@ namespace api.Stores
                 user.PasswordHash,
                 user.SecurityStamp,
                 user.Phone,
-                user.ConcurrencyStamp
+                user.ConcurrencyStamp,
+                EmailConfirmed = user.EmailConfirmed ? 1 : 0, // SQLite uses 1 for true and 0 for false
+                PhoneNumberConfirmed = user.PhoneNumberConfirmed ? 1 : 0,
+                TwoFactorEnabled = user.TwoFactorEnabled ? 1 : 0, // SQLite uses 1 for true and 0 for false
+                LockoutEnabled = user.LockoutEnabled ? 1 : 0, // SQLite uses 1 for true and 0 for false
+                AccessFailedCount = user.AccessFailedCount
             });
             user.Id = rowid;
             return IdentityResult.Success;
@@ -171,6 +176,7 @@ namespace api.Stores
                 Id = user.Id
             });
 
+            user.ConcurrencyStamp = newConcurrencyStamp; // Update the concurrency stamp in memory
             return affectedRows == 1 ? IdentityResult.Success :
                 IdentityResult.Failed(new IdentityError
                 {
