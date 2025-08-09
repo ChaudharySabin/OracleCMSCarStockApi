@@ -52,10 +52,13 @@ namespace api.Repository.Dapper
             // Cascading delete is not on by default in SQLite, so we need to handle it manually.
             // We are dealing with multiple tables, so we are creating a transaction and commiting it only if everything goes well.
             // If something goes wrong, we will rollback the transaction.
-            var transaction = _db.BeginTransaction();
+            using var transaction = _db.BeginTransaction();
             try
             {
                 // Delete all cars associated with the dealer
+                var deleteCarsSql = "Delete from Cars where DealerId = @DealerId;";
+                var result = await _db.ExecuteAsync(deleteCarsSql, new { DealerId = id });
+
 
                 var oldConcurrencyStamp = dealer.ConcurrencyStamp;
                 // We are also checking null as ConcurrencyStamp can be null in the database and a simple ConcurrencyStamp = null will never be true 
@@ -63,23 +66,19 @@ namespace api.Repository.Dapper
                 var affectedRows = await _db.ExecuteAsync(sql, new { Id = id, ConcurrencyStamp = oldConcurrencyStamp });
                 if (affectedRows == 0)
                 {
-                    throw new Exception("Something went wrong when deleting the dealer.");
-                }
-                var deleteCarsSql = "Delete from Cars where DealerId = @DealerId;";
-                var result = await _db.ExecuteAsync(deleteCarsSql, new { DealerId = id });
-                if (result == 0)
-                {
-                    throw new Exception("Something went wrong when deleting the dealer's cars.");
+                    throw new DBConcurrencyException("Dealer was modified or does not exist.");
                 }
 
+
                 transaction.Commit();
+                return new Dealer { Id = id };
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 transaction.Rollback();
-                throw new Exception("Something went wrong when deleting the dealer and its cars."); // This error will be sent to the controller to show server error
+                // Console.WriteLine(ex.Message);
+                throw new Exception(ex.Message); // This error will be sent to the controller to show server error
             }
-            return new Dealer { Id = id };
         }
 
         /// <summary>

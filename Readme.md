@@ -27,10 +27,17 @@ dotnet user-secrets set "JWT:SigningKey"  "a-very-very-very-very-very-very-very-
 dotnet user-secrets set "JWT:Issuer"      "CarStockApp"
 dotnet user-secrets set "JWT:Audience"    "CarStockClients"
 dotnet user-secrets set "JWT:ExpiryMinutes"    30
-dotnet user-sercrets set "SQLITECONNECTION"  "Data Source=Database/CarStock.db"
 ```
 
-3. **Run the API**
+3. **Ensure `SQLITECONNECTION` is either set in environment variable or in `appsetting.json`**
+
+```json
+{
+  "SQLITECONNECTION": "Data Source=Database/CarStock.db"
+}
+```
+
+4. **Run the API**
 
 ```bash
 dotnet restore
@@ -42,7 +49,7 @@ dotnet run
   - 10 cars per dealer
   - 1 SuperAdmin user
 
-4. **Browse the API**
+5. **Browse the API**
    Visit http://localhost:5265/swagger (or the HTTPS URL shown).
 
 ### Default Credential
@@ -87,7 +94,7 @@ smtp4dev
 1. **Pull the docker image**
 
 ```bash
-docker pull chaudharysabin/carstockapi:v1.3
+docker pull chaudharysabin/carstockapi:latest
 ```
 
 **or**
@@ -109,8 +116,9 @@ docker run -d \
   -e JWT__SigningKey="<YourVeryLongSigningKey>" \
   -e JWT__Issuer="YourIssue" \
   -e JWT__Audience="YourAudence" \
+  -e SQLITECONNECTION="Data Source=Database/CarStock.db" \
   -e ASPNETCORE_ENVIRONMENT="development" \
-  chaudharysabin/carstockapi:v1.3
+  chaudharysabin/carstockapi:latest
 ```
 
 -Example:
@@ -126,6 +134,7 @@ docker run -d \
   -e JWT__SigningKey="MySuperSecretKey123!" \
   -e JWT__Issuer="CarStockApp" \
   -e JWT__Audience="CarStockClients" \
+  -e SQLITECONNECTION="Data Source=Database/CarStock.db" \
   -e ASPNETCORE_ENVIRONMENT="Development" \
-  chaudharysabin/carstockapi:v1.3
+  chaudharysabin/carstockapi:latest
 ```
