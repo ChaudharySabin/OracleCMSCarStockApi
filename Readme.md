@@ -104,6 +104,8 @@ docker pull chaudharysabin/carstockapi:latest
 docker compose up --build
 ```
 
+**(Note this will run your docker image so you can ignore the commands below)**
+
 2. **Run the docker container if pulled from the dockerhub**
 
 ```bash
@@ -131,7 +133,7 @@ docker run -d \
   -e Smtp__Host="host.docker.internal" \
   -e Smtp__Port="25" \
   -e Smtp__From="noreply@localhost" \
-  -e JWT__SigningKey="MySuperSecretKey123!" \
+  -e JWT__SigningKey="MySuperSecretKey123456789456478841216514041084654894214065!" \
   -e JWT__Issuer="CarStockApp" \
   -e JWT__Audience="CarStockClients" \
   -e SQLITECONNECTION="Data Source=Database/CarStock.db" \
