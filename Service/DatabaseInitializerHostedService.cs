@@ -199,14 +199,15 @@ namespace api.Service
                 for (int i = 0; i < 10; i++)
                 {
                     var ConcurrencyStamp = Guid.NewGuid().ToString();
-                    var sql = "INSERT INTO Cars (Make, Model, Year, DealerId, ConcurrencyStamp) VALUES (@Make, @Model, @Year, @DealerId, @ConcurrencyStamp)";
+                    var sql = "INSERT INTO Cars (Make, Model, Year, DealerId, Stock,ConcurrencyStamp) VALUES (@Make, @Model, @Year, @DealerId, @Stock, @ConcurrencyStamp)";
                     await db.ExecuteAsync(sql, new
                     {
                         Make = makes[rnd.Next(makes.Length)],
                         Model = models[rnd.Next(models.Length)],
                         Year = years[rnd.Next(years.Length)],
                         DealerId = dealer.Id,
-                        ConcurrencyStamp = ConcurrencyStamp
+                        ConcurrencyStamp = ConcurrencyStamp,
+                        Stock = rnd.Next(1, 100) // Random stock between 1 and 100
                     });
                 }
             }

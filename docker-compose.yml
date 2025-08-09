@@ -1,0 +1,32 @@
+version: "3.9"
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: chaudharysabin/carstockapi:latest
+    container_name: carstock-api
+    ports:
+      - "5256:80"
+    environment:
+      JWT__Issuer: "CarStockApp"
+      JWT__Audience: "CarStockClients"
+      JWT__SigningKey: "ThisIsAnExampleSigningKeyForCarStockAppThatShouldBeLongEnoughToBeSecureAnd512BitsLong"
+      ConnectionStrings__SQLITECONNECTION: "Data Source=/Database/CarStock.db"
+      ASPNETCORE_ENVIRONMENT: "Development"
+      SMTP__Host: "smtp4dev"
+      SMTP__Port: "25"
+      SMTP__EmailFrom: "noreply@localhost.com"
+    volumes:
+      - carstock_data:/Database
+  smtp4dev:
+    image: rnwood/smtp4dev
+    container_name: smtp4dev
+    ports:
+      - "5025:25"   # SMTP
+      - "5000:80"   # Web UI
+    restart: unless-stopped
+
+volumes:
+  carstock_data:

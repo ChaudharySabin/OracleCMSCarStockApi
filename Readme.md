@@ -27,6 +27,7 @@ dotnet user-secrets set "JWT:SigningKey"  "a-very-very-very-very-very-very-very-
 dotnet user-secrets set "JWT:Issuer"      "CarStockApp"
 dotnet user-secrets set "JWT:Audience"    "CarStockClients"
 dotnet user-secrets set "JWT:ExpiryMinutes"    30
+dotnet user-sercrets set "SQLITECONNECTION"  "Data Source=Database/CarStock.db"
 ```
 
 3. **Run the API**
@@ -89,7 +90,14 @@ smtp4dev
 docker pull chaudharysabin/carstockapi:v1.3
 ```
 
-2. **Run the docker container\***
+**or**
+**build the image from the cloned repo**
+
+```bash
+docker compose up --build
+```
+
+2. **Run the docker container if pulled from the dockerhub**
 
 ```bash
 docker run -d \
@@ -102,7 +110,7 @@ docker run -d \
   -e JWT__Issuer="YourIssue" \
   -e JWT__Audience="YourAudence" \
   -e ASPNETCORE_ENVIRONMENT="development" \
-  chaudharysabin/carstockapi:v1.2
+  chaudharysabin/carstockapi:v1.3
 ```
 
 -Example:
@@ -119,5 +127,5 @@ docker run -d \
   -e JWT__Issuer="CarStockApp" \
   -e JWT__Audience="CarStockClients" \
   -e ASPNETCORE_ENVIRONMENT="Development" \
-  chaudharysabin/carstockapi:v1.2
+  chaudharysabin/carstockapi:v1.3
 ```
