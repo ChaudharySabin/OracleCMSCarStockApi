@@ -58,7 +58,8 @@ namespace api.Repository.Dapper
                 // Delete all cars associated with the dealer
 
                 var oldConcurrencyStamp = dealer.ConcurrencyStamp;
-                var sql = "Delete from Dealers where Id = @Id and ConcurrencyStamp = @ConcurrencyStamp";
+                // We are also checking null as ConcurrencyStamp can be null in the database and a simple ConcurrencyStamp = null will never be true 
+                var sql = "Delete from Dealers where Id = @Id and (ConcurrencyStamp = @ConcurrencyStamp or ConcurrencyStamp is null)";
                 var affectedRows = await _db.ExecuteAsync(sql, new { Id = id, ConcurrencyStamp = oldConcurrencyStamp });
                 if (affectedRows == 0)
                 {
@@ -66,7 +67,7 @@ namespace api.Repository.Dapper
                 }
                 var deleteCarsSql = "Delete from Cars where DealerId = @DealerId";
                 var result = await _db.ExecuteAsync(deleteCarsSql, new { DealerId = id });
-                if (affectedRows == 0)
+                if (result == 0)
                 {
                     throw new Exception("Something went wrong when deleting the dealer's cars.");
                 }
@@ -119,7 +120,8 @@ namespace api.Repository.Dapper
 
             var oldConcurrencyStamp = dealer.ConcurrencyStamp;
             var newConcurrencyStamp = Guid.NewGuid().ToString();
-            string sql = "Update Dealers set Name=@Name, Description = @description, ConcurrencyStamp = @NewConCurrencyStamp where Id = @Id and ConcurrencyStamp = @OldConcurrencyStamp";
+            // We are also checking null as ConcurrencyStamp can be null in the database and a simple ConcurrencyStamp = null will never be true 
+            string sql = "Update Dealers set Name=@Name, Description = @description, ConcurrencyStamp = @NewConCurrencyStamp where Id = @Id and (ConcurrencyStamp = @OldConcurrencyStamp or ConcurrencyStamp is null)";
             var affectedRows = await _db.ExecuteAsync(sql, new
             {
                 Id = id,

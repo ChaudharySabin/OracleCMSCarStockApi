@@ -150,8 +150,12 @@ namespace api.Controllers
                 {
                     return NotFound();
                 }
-                await _carRepo.UpdateCarAsync(id, carUpdateDto.Make, carUpdateDto.Model, carUpdateDto.Year);
-                return carFullAccess.ToCarReturnDto();
+                var udpatedCar = await _carRepo.UpdateCarAsync(id, carUpdateDto.Make, carUpdateDto.Model, carUpdateDto.Year);
+                if (udpatedCar == null)
+                {
+                    return NotFound();
+                }
+                return udpatedCar.ToCarReturnDto();
             }
 
             // Check if the user is a Dealer and retrieve their dealer ID
@@ -170,8 +174,12 @@ namespace api.Controllers
             {
                 return Forbid();
             }
-            await _carRepo.UpdateCarAsync(id, carUpdateDto.Make, carUpdateDto.Model, carUpdateDto.Year);
-            return car.ToCarReturnDto();
+            var updatedCar = await _carRepo.UpdateCarAsync(id, carUpdateDto.Make, carUpdateDto.Model, carUpdateDto.Year);
+            if (updatedCar == null)
+            {
+                return NotFound();
+            }
+            return updatedCar.ToCarReturnDto();
         }
 
         /// <summary>
@@ -223,8 +231,12 @@ namespace api.Controllers
                 {
                     return NotFound();
                 }
-                await _carRepo.UpdateCarStockAsync(id, stock.Stock);
-                return car.ToCarReturnDto();
+                var updadedCar = await _carRepo.UpdateCarStockAsync(id, stock.Stock);
+                if (updadedCar == null)
+                {
+                    return NotFound();
+                }
+                return updadedCar.ToCarReturnDto();
             }
 
 
@@ -242,8 +254,13 @@ namespace api.Controllers
 
             }
 
-            await _carRepo.UpdateCarStockAsync(id, stock.Stock);
-            return carFilteredWithDealer.ToCarReturnDto();
+            var updatedCar = await _carRepo.UpdateCarStockAsync(id, stock.Stock);
+            if (updatedCar == null)
+            {
+                return NotFound();
+            }
+
+            return updatedCar.ToCarReturnDto();
         }
 
         /// <summary>

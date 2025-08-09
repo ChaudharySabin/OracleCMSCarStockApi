@@ -2,15 +2,18 @@ using System.Data;
 using api.Interfaces;
 using api.Models;
 using Dapper;
+using Microsoft.AspNetCore.Identity;
 namespace api.Repository.Dapper
 {
     public class UserDapperRepository : IUserRepository
     {
         private readonly IDbConnection _db;
+        private readonly UserManager<User> _userManager;
 
-        public UserDapperRepository(IDbConnection db)
+        public UserDapperRepository(IDbConnection db, UserManager<User> userManager)
         {
             _db = db;
+            _userManager = userManager;
         }
 
         /// <summary>
@@ -22,17 +25,31 @@ namespace api.Repository.Dapper
         /// </returns>
         public async Task<User> CreateUserAsync(User user)
         {
-            var sql = "Insert into AspNetUsers (Name, Email, Phone, DealerId, PhoneNumber) Values (@Name, @Email, @Phone, @DealerId, @PhoneNumber); Select last_insert_rowid();";
+            // This method will almost newer be used as we are using Identity to create users. This is here is just an example of how to use Dapper to create a user.
+            // The acutal dapper implementation is the created in the UserDapperStore class.
+            var passwordHasher = new PasswordHasher<User>();
+            var hashedPasswpord = passwordHasher.HashPassword(user, user.PasswordHash!);
+            // We are using Identity to create users, so we don't need to insert the user into the database manually.
+            // But we are still using Dapper to insert the user into the database.
+            user.PasswordHash = hashedPasswpord;
+            user.ConcurrencyStamp = Guid.NewGuid().ToString();
+            var sql = "Insert into AspNetUsers (UserName, NormalizedUserName, Name, Email, NormalizedEmail,Phone,PhoneNumber, PasswordHash, ConcurrencyStamp, DealerId) Values (@UserName, @NormalizedUserName, @Name, @Email, @NormalizedEmail, @Phone, @PhoneNumber, @PasswordHash, @ConcurrencyStamp, @DealerId); Select last_insert_rowid();";
             var id = await _db.ExecuteScalarAsync<int>(sql, new
             {
+                UserName = user.UserName,
+                NormalizedUserName = user.NormalizedUserName,
                 Name = user.Name,
                 Email = user.Email,
+                NormalizedEmail = user.NormalizedEmail,
                 Phone = user.Phone,
-                DealerId = user.DealerId,
-                PhoneNumber = user.Phone
+                PhoneNumber = user.PhoneNumber,
+                PasswordHash = user.PasswordHash,
+                ConcurrencyStamp = user.ConcurrencyStamp,
+                DealerId = user.DealerId
             });
             user.Id = id;
             return user;
+
         }
 
         /// <summary>
@@ -50,7 +67,9 @@ namespace api.Repository.Dapper
             }
 
             var oldConcurrencyStamp = user.ConcurrencyStamp;
-            var sql = "Delete from AspNetUsers where Id = @Id and ConcurrencyStamp = @ConcurrencyStamp";
+            //We need not to check for ConcurrencyStamp as users are being created by Identity and it will always have a ConcurrencyStamp.
+            // However, we are checking it here for edge cases where the IUserRepository is used directly.
+            var sql = "Delete from AspNetUsers where Id = @Id and (ConcurrencyStamp = @ConcurrencyStamp or ConcurrencyStamp is null);";
             var affectedRows = await _db.ExecuteAsync(sql, new { Id = id, ConcurrencyStamp = oldConcurrencyStamp });
             if (affectedRows == 0)
             {
@@ -106,7 +125,7 @@ namespace api.Repository.Dapper
             var newConcurrencyStamp = Guid.NewGuid().ToString("D");
             var sql = "Update AspNetUsers set UserName = @UserName, Name = @Name, NormalizedUserName = @NormalizedUserName, " +
                       "Email = @Email, NormalizedEmail = @NormalizedEmail, Phone = @Phone, PhoneNumber = @PhoneNumber, " +
-                      "ConcurrencyStamp = @NewConcurrencyStamp where Id = @Id and ConcurrencyStamp = @OldConcurrencyStamp";
+                      "ConcurrencyStamp = @NewConcurrencyStamp where Id = @Id and (ConcurrencyStamp = @OldConcurrencyStamp or ConcurrencyStamp is null)";
             var affectedRows = await _db.ExecuteAsync(sql, new
             {
                 Id = id,
@@ -153,7 +172,7 @@ namespace api.Repository.Dapper
             user.DealerId = dealerId;
             var oldConcurrencyStamp = user.ConcurrencyStamp;
             var newConcurrencyStamp = Guid.NewGuid().ToString("D");
-            var updateSql = "Update AspNetUsers set DealerId = @DealerId, ConcurrencyStamp = @NewConcurrencyStamp where Id = @Id and ConcurrencyStamp = @OldConcurrencyStamp";
+            var updateSql = "Update AspNetUsers set DealerId = @DealerId, ConcurrencyStamp = @NewConcurrencyStamp where Id = @Id and (ConcurrencyStamp = @OldConcurrencyStamp or ConcurrencyStamp is null)";
             var affectedRow = await _db.ExecuteAsync(updateSql, new { DealerId = dealerId, Id = id, NewConcurrencyStamp = newConcurrencyStamp, OldConcurrencyStamp = oldConcurrencyStamp });
             if (affectedRow == 0)
             {

@@ -45,8 +45,9 @@ namespace api.Stores
             {
                 throw new ArgumentNullException(nameof(role));
             }
-            var sql = "DELETE FROM AspNetRoles WHERE Id = @Id";
-            var result = await _db.ExecuteAsync(sql, new { Id = role.Id });
+
+            var sql = "DELETE FROM AspNetRoles WHERE Id = @Id AND (ConcurrencyStamp = @ConcurrencyStamp OR ConcurrencyStamp IS NULL);";
+            var result = await _db.ExecuteAsync(sql, new { Id = role.Id, ConcurrencyStamp = role.ConcurrencyStamp });
             return result == 0 ? IdentityResult.Failed(new IdentityError
             {
                 Description = "Role deletion failed.",
@@ -54,14 +55,6 @@ namespace api.Stores
             }) : IdentityResult.Success;
         }
 
-        public void Dispose()
-        {
-            // Dispose of the database connection if necessary
-            if (_db is IDisposable disposable)
-            {
-                disposable.Dispose();
-            }
-        }
 
         public async Task<IdentityRole<int>?> FindByIdAsync(string roleId, CancellationToken cancellationToken)
         {
@@ -79,6 +72,19 @@ namespace api.Stores
             return await _db.QuerySingleOrDefaultAsync<IdentityRole<int>>(sql, new { NormalizedName = normalizedRoleName });
         }
 
+        public void Dispose()
+        {
+            // Dispose of the database connection if necessary
+            if (_db is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
+        }
+
+
+
+
+        // These methods don't interact with the database directly.
         public Task<string?> GetNormalizedRoleNameAsync(IdentityRole<int> role, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();

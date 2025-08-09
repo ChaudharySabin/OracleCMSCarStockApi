@@ -29,8 +29,7 @@ namespace api.Repository.Dapper
         {
             // Using a left join to include dealer names in the car list
             var car = await _db.QueryAsync<Car>(
-                "Select c.Id, c.DealerId, c.Make, c.Model, c.Year, c.Stock, d.Name as DealerName from Cars as c" +
-                "left join Dealers as d on c.DealerId = d.Id"
+                "Select Cars.Id, Cars.DealerId, Cars.Make, Cars.Model, Cars.Year, Cars.Stock, Dealers.Name as DealerName from Cars left join Dealers on Cars.DealerId = Dealers.Id"
             );
             return car.ToList();
         }
@@ -107,8 +106,8 @@ namespace api.Repository.Dapper
             var oldConcurrencyStamp = existingCar.ConcurrencyStamp;
             String newConcurrencyStamp = Guid.NewGuid().ToString();
 
-            var sql = "Update Cars set Make = @Make, Model = @Model, Year = @Year, ConcurrencyStamp = @newConcurrencyStamp" +
-               "where Id = @Id and ConcurrencyStamp = @oldConcurrencyStamp; ";
+            // We are also checking null as ConcurrencyStamp can be null in the database and a simple ConcurrencyStamp = null will never be true 
+            var sql = "Update Cars set Make = @Make, Model = @Model, Year = @Year, ConcurrencyStamp = @newConcurrencyStamp where Id = @Id and (ConcurrencyStamp = @oldConcurrencyStamp or ConcurrencyStamp is null); ";
             var affectedRows = await _db.ExecuteAsync(sql, new { Id = id, Make = make, Model = model, Year = Year, newConcurrencyStamp, oldConcurrencyStamp });
 
             // The ExecuteAsync method returns the number of rows affected by the update operation.
@@ -147,11 +146,13 @@ namespace api.Repository.Dapper
             }
             // Update the car's dealer ID
             string? oldConcurrencyStamp = car.ConcurrencyStamp;
+            Console.WriteLine($"Old Concurrency Stamp: {oldConcurrencyStamp}");
             string newConcurrencyStamp = Guid.NewGuid().ToString();
-            var updateSql = "Update Cars set DealerId = @DealerId, ConcurrencyStamp = @newConcurrencyStamp where Id = @Id and ConcurrencyStamp = @oldConcurrencyStamp; ";
+            // We are also checking null as ConcurrencyStamp can be null in the database and a simple ConcurrencyStamp = null will never be true 
+            var updateSql = "Update Cars set DealerId = @DealerId, ConcurrencyStamp = @NewConcurrencyStamp where Id = @Id AND (ConcurrencyStamp = @OldConcurrencyStamp OR ConcurrencyStamp IS NULL);";
             var affectedRow = await _db.ExecuteAsync(
                 updateSql,
-                new { DealerId = dealerId, newConcurrencyStamp = newConcurrencyStamp, Id = id, oldConcurrencyStamp = oldConcurrencyStamp }
+                new { DealerId = dealerId, NewConcurrencyStamp = newConcurrencyStamp, Id = id, OldConcurrencyStamp = oldConcurrencyStamp }
             );
 
             //ExecuteAsync returns the number of rows affected by the update operation.
@@ -183,7 +184,8 @@ namespace api.Repository.Dapper
             // Update the stock of the car
             string? oldConcurrencyStamp = existingCar.ConcurrencyStamp;
             string newConcurrencyStamp = Guid.NewGuid().ToString();
-            var sql = "Update Cars set Stock = @Stock, ConcurrencyStamp = @newConcurrencyStamp where Id = @Id and ConcurrencyStamp = @oldConcurrencyStamp";
+            // We are also checking null as ConcurrencyStamp can be null in the database and a simple ConcurrencyStamp = null will never be true 
+            var sql = "Update Cars set Stock = @Stock, ConcurrencyStamp = @newConcurrencyStamp where Id = @Id and (ConcurrencyStamp = @oldConcurrencyStamp or ConcurrencyStamp is null); ";
             var affectedRows = await _db.ExecuteAsync(sql, new { Id = id, Stock = stock, newConcurrencyStamp, oldConcurrencyStamp });
 
             if (affectedRows == 0)
@@ -214,7 +216,8 @@ namespace api.Repository.Dapper
                 return null; // Car not found
             }
             string? oldConcurrencyStamp = existingCar.ConcurrencyStamp;
-            var sql = "Delete from Cars where Id = @Id and ConcurrencyStamp = @oldConcurrencyStamp; ";
+            // We are also checking null as ConcurrencyStamp can be null in the database and a simple ConcurrencyStamp = null will never be true 
+            var sql = "Delete from Cars where Id = @Id and (ConcurrencyStamp = @oldConcurrencyStamp or ConcurrencyStamp is null); ";
             var affectedRows = await _db.ExecuteAsync(sql, new { Id = id, oldConcurrencyStamp = oldConcurrencyStamp });
 
             if (affectedRows == 0)

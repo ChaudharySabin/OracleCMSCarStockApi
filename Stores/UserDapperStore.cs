@@ -12,19 +12,23 @@ using System.Data.Common;
 namespace api.Stores
 {
     public class UserDapperStore :
-    IUserStore<User>,
-    IUserPasswordStore<User>,
-    IUserEmailStore<User>,
-    IUserSecurityStampStore<User>,
-    IUserRoleStore<User>,
-    IUserPhoneNumberStore<User>
+    IUserStore<User>, // This interface is used to store user information in the database.
+    IUserPasswordStore<User>, // This interface is used to store user passwords in the database.
+    IUserEmailStore<User>, // This interface is used to store user emails in the database.
+    IUserSecurityStampStore<User>, // This interface is used to store user security stamps in the database.
+    IUserRoleStore<User>, // This interface is used to store user roles in the database.
+    IUserPhoneNumberStore<User> // This interface is used to store user phone numbers in the database. Mainly used here to generate otp codes for password reset instead of tokens.
     {
-        private readonly IDbConnection _db; //Change this later to IAuthUserRepository
+        private readonly IDbConnection _db;
         public UserDapperStore(IDbConnection db)
         {
             _db = db;
         }
+        // The Identity follows a pattern called Unit of Work pattern, which essentially means that we change the state of the user in memory and then save it to the database.
+        // Getting and setting of a single user properties is done without interacting with the database
+        // So CreateAsync, UpdateAsync, DeleteAsync, etc. are methods that save it to the database.
 
+        //Methods that interact with the database
         public async Task<IdentityResult> AddToRoleAsync(User user, string roleName, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -86,15 +90,6 @@ namespace api.Stores
                 );
         }
 
-        public void Dispose()
-        {
-            // Dispose of the database connection if necessary
-            if (_db is IDisposable disposable)
-            {
-                disposable.Dispose();
-            }
-        }
-
         public Task<User?> FindByEmailAsync(string normalizedEmail, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -122,6 +117,83 @@ namespace api.Stores
             var sql = "Select * from AspNetUsers where NormalizedUserName = @NormalizedUserName";
             return _db.QuerySingleOrDefaultAsync<User>(sql, new { NormalizedUserName = normalizedUserName });
         }
+
+        public async Task RemoveFromRoleAsync(User user, string roleName, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (user == null) throw new ArgumentNullException(nameof(user));
+            if (string.IsNullOrEmpty(roleName)) throw new ArgumentNullException(nameof(roleName));
+
+            // Can also be done using the query below
+            // var sql = "Delete from AspNetUserRoles where UserId = @UserId
+            // and RoleId = (Select Id from AspNetRoles where NormalizedName = @roleName)";
+            // But we are using the roleName to get the roleId first and then deleting the user from the role.
+            //The roleName is normalized to upper case from the user Manager. 
+
+            // This query is used to make it more readable
+            var roleId = await _db.ExecuteScalarAsync<int?>(
+                "Select Id from AspNetRoles where NormalizedName = @NormalizedName",
+                new { NormalizedName = roleName.ToUpperInvariant() });
+            if (roleId == null)
+            {
+                throw new ArgumentException("Role not found.", nameof(roleName));
+            }
+            var sql = "Delete from AspNetUserRoles where UserId = @UserId and RoleId = @RoleId";
+            var result = await _db.ExecuteAsync(sql, new
+            {
+                UserId = user.Id,
+                RoleId = roleId
+            });
+        }
+
+        public async Task<IdentityResult> UpdateAsync(User user, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (user == null) throw new ArgumentNullException(nameof(user));
+            var oldConcurrencyStamp = user.ConcurrencyStamp;
+            var newConcurrencyStamp = Guid.NewGuid().ToString("D");
+
+            var sql = "Update AspNetUsers set UserName = @UserName, Name = @Name, NormalizedUserName = @NormalizedUserName, " +
+                      "Email = @Email, PasswordHash = @PasswordHash, NormalizedEmail = @NormalizedEmail, SecurityStamp = @SecurityStamp, " +
+                      "ConcurrencyStamp = @ConcurrencyStamp where Id = @Id and (ConcurrencyStamp = @OldConcurrencyStamp or ConcurrencyStamp is null)";
+
+            var affectedRows = await _db.ExecuteAsync(sql, new
+            {
+                UserName = user.UserName,
+                Name = user.Name,
+                NormalizedUserName = user.NormalizedUserName,
+                NormalizedEmail = user.NormalizedEmail,
+                Email = user.Email,
+                PasswordHash = user.PasswordHash,
+                SecurityStamp = user.SecurityStamp,
+                ConcurrencyStamp = newConcurrencyStamp,
+                OldConcurrencyStamp = oldConcurrencyStamp,
+                Id = user.Id
+            });
+
+            return affectedRows == 1 ? IdentityResult.Success :
+                IdentityResult.Failed(new IdentityError
+                {
+                    Code = "ConcurrencyFailure",
+                    Description = "The user was modified by another process."
+                });
+        }
+
+        public void Dispose()
+        {
+            // Dispose of the database connection if necessary
+            if (_db is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
+        }
+
+
+
+
+
+
+        // Methods that don't interact with the database
 
         public Task<string?> GetEmailAsync(User user, CancellationToken cancellationToken)
         {
@@ -178,6 +250,8 @@ namespace api.Stores
 
         }
 
+        // This method is an exception here as Dapper doesn't provide functionality to include relationships like Entity Framework does.
+        // Hence, we fetch the roles from the database directly.
         public async Task<IList<string>> GetRolesAsync(User user, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -209,6 +283,8 @@ namespace api.Stores
         }
 
 
+        // Similarly we are using database here to check all users in a role.
+        // This is because Dapper doesn't provide functionality to include relationships like Entity Framework does.
         public async Task<IList<User>> GetUsersInRoleAsync(string roleName, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -225,6 +301,9 @@ namespace api.Stores
             return Task.FromResult(!string.IsNullOrEmpty(user.PasswordHash));
         }
 
+
+        // Similarly we are using database here to check if the user is in a role.
+        // This is because Dapper doesn't provide functionality to include relationships like Entity Framework does.
         public async Task<bool> IsInRoleAsync(User user, string roleName, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -240,37 +319,6 @@ namespace api.Stores
             });
             return count == 0 ? false : true;
 
-        }
-
-        public async Task RemoveFromRoleAsync(User user, string roleName, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            if (user == null) throw new ArgumentNullException(nameof(user));
-            if (string.IsNullOrEmpty(roleName)) throw new ArgumentNullException(nameof(roleName));
-
-            // Can also be done using the query below
-            // var sql = "Delete from AspNetUserRoles where UserId = @UserId
-            // and RoleId = (Select Id from AspNetRoles where NormalizedName = @roleName)"; 
-            //The roleName is normalized to upper case from the user Manager. 
-
-            var roleId = await _db.ExecuteScalarAsync<int?>(
-                "Select Id from AspNetRoles where NormalizedName = @NormalizedName",
-                new { NormalizedName = roleName.ToUpperInvariant() });
-            if (roleId == null)
-            {
-                throw new ArgumentException("Role not found.", nameof(roleName));
-            }
-            var sql = "Delete from AspNetUserRoles where UserId = @UserId and RoleId = @RoleId";
-            var result = await _db.ExecuteAsync(sql, new
-            {
-                UserId = user.Id,
-                RoleId = roleId
-            });
-            // return result == 0 ? IdentityResult.Failed(new IdentityError
-            // {
-            //     Code = nameof(RemoveFromRoleAsync),
-            //     Description = "Failed to remove user from role."
-            // }) : IdentityResult.Success;
         }
 
         public Task SetEmailAsync(User user, string? email, CancellationToken cancellationToken)
@@ -307,7 +355,6 @@ namespace api.Stores
             return Task.CompletedTask;
         }
 
-
         public Task SetPasswordHashAsync(User user, string? passwordHash, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -315,7 +362,6 @@ namespace api.Stores
             user.PasswordHash = passwordHash;
             return Task.CompletedTask;
         }
-
 
         public Task SetPhoneNumberAsync(User user, string? phoneNumber, CancellationToken cancellationToken)
         {
@@ -349,39 +395,6 @@ namespace api.Stores
             if (user == null) throw new ArgumentNullException(nameof(user));
             user.UserName = userName;
             return Task.CompletedTask;
-        }
-
-        public async Task<IdentityResult> UpdateAsync(User user, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            if (user == null) throw new ArgumentNullException(nameof(user));
-            var oldConcurrencyStamp = user.ConcurrencyStamp;
-            user.ConcurrencyStamp = Guid.NewGuid().ToString("D");
-
-            var sql = "Update AspNetUsers set UserName = @UserName, Name = @Name, NormalizedUserName = @NormalizedUserName, " +
-                      "Email = @Email, PasswordHash = @PasswordHash, NormalizedEmail = @NormalizedEmail, SecurityStamp = @SecurityStamp, " +
-                      "ConcurrencyStamp = @ConcurrencyStamp where Id = @Id and ConcurrencyStamp = @OldConcurrencyStamp";
-
-            var affectedRows = await _db.ExecuteAsync(sql, new
-            {
-                UserName = user.UserName,
-                Name = user.Name,
-                NormalizedUserName = user.NormalizedUserName,
-                NormalizedEmail = user.NormalizedEmail,
-                Email = user.Email,
-                PasswordHash = user.PasswordHash,
-                SecurityStamp = user.SecurityStamp,
-                ConcurrencyStamp = user.ConcurrencyStamp,
-                OldConcurrencyStamp = oldConcurrencyStamp,
-                Id = user.Id
-            });
-
-            return affectedRows == 1 ? IdentityResult.Success :
-                IdentityResult.Failed(new IdentityError
-                {
-                    Code = "ConcurrencyFailure",
-                    Description = "The user was modified by another process."
-                });
         }
 
 
