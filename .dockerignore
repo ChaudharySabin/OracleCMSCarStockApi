@@ -2,6 +2,9 @@ bin/
 obj/
 .vs/
 .vscode/
+**/*.user
+**/*.suo
 *.mdf
 *.ldf
 secrets.json
+docker-compose.yml

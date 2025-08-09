@@ -29,15 +29,7 @@ dotnet user-secrets set "JWT:Audience"    "CarStockClients"
 dotnet user-secrets set "JWT:ExpiryMinutes"    30
 ```
 
-3. **Configure `appsetting.json` to include UseInMemoryDatabase:true**
-
-```json
-{
-  "UseInMemoryDatabase": true
-}
-```
-
-4. **Run the API**
+3. **Run the API**
 
 ```bash
 dotnet restore
@@ -49,7 +41,7 @@ dotnet run
   - 10 cars per dealer
   - 1 SuperAdmin user
 
-5. **Browse the API**
+4. **Browse the API**
    Visit http://localhost:5265/swagger (or the HTTPS URL shown).
 
 ### Default Credential
@@ -89,32 +81,12 @@ dotnet user-secrets set "Smtp:From"    "noreply@carstock.local"
 smtp4dev
 ```
 
-2. **To Use SQLServer, Configure `appsetting.json` and remove `UseInMemoryDatabase:false` and set user-secrets for connection string**
-
-```json
-{
-  "UseInMemoryDatabase": false
-}
-```
-
-```bash
-dotnet user-secrets set "ConnectionStrings:SQLSERVERCONNECTION" = YourConnectionStringHere
-```
-
-2. **Create Migrations**
-
-```bash
-dotnet tool install -g dotnet-ef
-dotnet ef migrations add InitialCreate
-dotnet ef database update
-```
-
 ## Docker
 
 1. **Pull the docker image**
 
 ```bash
-docker pull chaudharysabin/carstockapi:v1.2
+docker pull chaudharysabin/carstockapi:v1.3
 ```
 
 2. **Run the docker container\***
@@ -123,7 +95,6 @@ docker pull chaudharysabin/carstockapi:v1.2
 docker run -d \
   --name carstock-api \
   -p <Port>:80 \
-  -e UseInMemoryDatabase=true \
   -e Smtp__Host="host.docker.internal" \
   -e Smtp__Port="25" \
   -e Smtp__From="<YourFromEmail>" \
