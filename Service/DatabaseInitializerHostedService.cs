@@ -86,10 +86,13 @@ namespace api.Service
 
             // 3) (Optional) seed roles/users AFTER schema exists
             await SeedIdentityAsync(cancellationToken);
+            await SeedDealersAsync(cancellationToken);
+            await SeedCarsAsync(cancellationToken);
         }
 
         private async Task SeedIdentityAsync(CancellationToken ct)
         {
+            ct.ThrowIfCancellationRequested();
             using var scope = _sp.CreateScope();
             var roleMgr = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<int>>>();
             var userMgr = scope.ServiceProvider.GetRequiredService<UserManager<api.Models.User>>();
@@ -107,30 +110,7 @@ namespace api.Service
 
             // Local Function to ensure a user exists with a specific role
             // users
-            async Task EnsureUserAsync(string email, string userName, string FullName, string role, string Phone = "0000000000", int? dealerId = null)
-            {
-                var u = await userMgr.FindByEmailAsync(email);
-                if (u != null) return;
 
-                u = new api.Models.User
-                {
-                    Email = email,
-                    EmailConfirmed = true,
-                    UserName = userName,
-                    Name = FullName,
-                    DealerId = dealerId,
-                    Phone = Phone,
-                    PhoneNumber = Phone,
-                };
-
-                var create = await userMgr.CreateAsync(u, "Password123#");
-                if (!create.Succeeded)
-                    throw new InvalidOperationException($"Failed to create user '{email}': {string.Join(",", create.Errors.Select(e => e.Description))}");
-
-                var addRole = await userMgr.AddToRoleAsync(u, role);
-                if (!addRole.Succeeded)
-                    throw new InvalidOperationException($"Failed to add role '{role}' to '{email}': {string.Join(",", addRole.Errors.Select(e => e.Description))}");
-            }
 
             await EnsureUserAsync(email: "superadmin@example.com", userName: "superadmin", FullName: "SuperAdmin", role: "SuperAdmin");
             await EnsureUserAsync(email: "dealer@example.com", userName: "dealeruser", FullName: "Dealer", role: "Dealer");
@@ -138,8 +118,11 @@ namespace api.Service
             // If you also want to seed Dealers/Cars here, you can resolve IDbConnection again and run inserts.
         }
 
-        private async Task SeedDealersCarsAsync(CancellationToken ct)
+
+
+        private async Task SeedDealersAsync(CancellationToken ct)
         {
+            ct.ThrowIfCancellationRequested();
             using var scope = _sp.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<IDbConnection>();
 
@@ -166,9 +149,11 @@ namespace api.Service
                 new api.Models.Dealer { Name = "Dealer Ten", Description = "Tenth dealer" },
             };
 
+            int count = 0;
             foreach (var dealer in dealers)
             {
                 var ConcurrencyStamp = Guid.NewGuid().ToString();
+                count++;
                 var sql = "INSERT INTO Dealers (Name, Description, ConcurrencyStamp) VALUES (@Name, @Description, @ConcurrencyStamp); SELECT last_insert_rowid();";
                 var id = await db.ExecuteScalarAsync<int>(sql, new
                 {
@@ -176,6 +161,7 @@ namespace api.Service
                     dealer.Description,
                     ConcurrencyStamp
                 });
+                await EnsureUserAsync(email: $"dealer{count}@example.com", userName: $"dealeruser{count}", FullName: $"Dealer {count}", role: "Dealer");
             }
             _logger.LogInformation("Dealers seeded successfully");
         }
@@ -183,6 +169,7 @@ namespace api.Service
 
         private async Task SeedCarsAsync(CancellationToken ct)
         {
+            ct.ThrowIfCancellationRequested();
             using var scope = _sp.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<IDbConnection>();
 
@@ -227,5 +214,33 @@ namespace api.Service
         }
 
         public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+
+        private async Task EnsureUserAsync(string email, string userName, string FullName, string role, string Phone = "0000000000", int? dealerId = null)
+        {
+            using var scope = _sp.CreateScope();
+            var roleMgr = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<int>>>();
+            var userMgr = scope.ServiceProvider.GetRequiredService<UserManager<api.Models.User>>();
+            var u = await userMgr.FindByEmailAsync(email);
+            if (u != null) return;
+
+            u = new api.Models.User
+            {
+                Email = email,
+                EmailConfirmed = true,
+                UserName = userName,
+                Name = FullName,
+                DealerId = dealerId,
+                Phone = Phone,
+                PhoneNumber = Phone,
+            };
+
+            var create = await userMgr.CreateAsync(u, "Password123#");
+            if (!create.Succeeded)
+                throw new InvalidOperationException($"Failed to create user '{email}': {string.Join(",", create.Errors.Select(e => e.Description))}");
+
+            var addRole = await userMgr.AddToRoleAsync(u, role);
+            if (!addRole.Succeeded)
+                throw new InvalidOperationException($"Failed to add role '{role}' to '{email}': {string.Join(",", addRole.Errors.Select(e => e.Description))}");
+        }
     }
 }
