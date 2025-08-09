@@ -57,7 +57,7 @@ namespace api.Stores
             user.ConcurrencyStamp = Guid.NewGuid().ToString("D");
 
             var sql = "Insert into AspNetUsers (UserName, Name, NormalizedUserName, Email, NormalizedEmail, PasswordHash, SecurityStamp, Phone , ConcurrencyStamp) " +
-                       "Values (@UserName, @Name, @NormalizedUserName, @Email, @NormalizedEmail, @PasswordHash, @SecurityStamp, @Phone, @ConcurrencyStamp)" +
+                       "Values (@UserName, @Name, @NormalizedUserName, @Email, @NormalizedEmail, @PasswordHash, @SecurityStamp, @Phone, @ConcurrencyStamp);" +
                        " SELECT last_insert_rowid();";
             var rowid = await _db.ExecuteScalarAsync<int>(sql, new
             {
