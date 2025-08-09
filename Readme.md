@@ -129,7 +129,6 @@ docker run -d \
 docker run -d \
   --name carstock-api \
   -p 5256:80 \
-  -e UseInMemoryDatabase=true \
   -e Smtp__Host="host.docker.internal" \
   -e Smtp__Port="25" \
   -e Smtp__From="noreply@localhost" \
@@ -140,3 +139,5 @@ docker run -d \
   -e ASPNETCORE_ENVIRONMENT="Development" \
   chaudharysabin/carstockapi:latest
 ```
+
+\*\*(Note: Please run Smpt4dev when running the docker image like this or you can run smtp4dev as a docker service)
