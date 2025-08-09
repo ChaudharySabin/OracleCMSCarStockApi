@@ -94,7 +94,7 @@ namespace api.Stores
         {
             cancellationToken.ThrowIfCancellationRequested();
             if (string.IsNullOrEmpty(normalizedEmail)) throw new ArgumentNullException(nameof(normalizedEmail));
-            Console.WriteLine($"Finding user by email: {normalizedEmail}");
+            // Console.WriteLine($"Finding user by email: {normalizedEmail}");
             var sql = "Select * from AspNetUsers where NormalizedEmail = @NormalizedEmail";
             return _db.QuerySingleOrDefaultAsync<User>(sql, new { NormalizedEmail = normalizedEmail });
         }
