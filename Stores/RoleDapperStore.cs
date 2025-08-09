@@ -23,7 +23,7 @@ namespace api.Stores
                 throw new ArgumentNullException(nameof(role));
             }
             var concurrenyStamp = new Guid().ToString();
-            var sql = "INSERT INTO AspNetRoles (Name, NormalizedName, ConcurrencyStamp) VALUES (@Name, @NormalizedName, @ConcurrencyStamp);";
+            var sql = "INSERT INTO AspNetRoles (Name, NormalizedName, ConcurrencyStamp) VALUES (@Name, @NormalizedName, @ConcurrencyStamp);SElect last_insert_rowid();";
             int result = await _db.ExecuteAsync(sql, new
             {
                 Name = role.Name,
@@ -31,6 +31,8 @@ namespace api.Stores
                 ConcurrencyStamp = concurrenyStamp
             });
 
+            role.Id = result;
+            role.ConcurrencyStamp = concurrenyStamp;
             return result == 0 ? IdentityResult.Failed(new IdentityError
             {
                 Description = "Role creation failed.",
@@ -60,7 +62,7 @@ namespace api.Stores
         {
             cancellationToken.ThrowIfCancellationRequested();
             if (string.IsNullOrEmpty(roleId)) throw new ArgumentNullException(nameof(roleId));
-            var sql = "Select * from AspNetRoles where Id = @Id";
+            var sql = "Select * from AspNetRoles where Id = @Id;";
             return await _db.QuerySingleOrDefaultAsync<IdentityRole<int>>(sql, new { Id = int.Parse(roleId) });
         }
 
@@ -68,7 +70,7 @@ namespace api.Stores
         {
             cancellationToken.ThrowIfCancellationRequested();
             if (string.IsNullOrEmpty(normalizedRoleName)) throw new ArgumentNullException(nameof(normalizedRoleName));
-            var sql = "Select * from AspNetRoles where NormalizedName = @NormalizedName";
+            var sql = "Select * from AspNetRoles where NormalizedName = @NormalizedName;";
             return await _db.QuerySingleOrDefaultAsync<IdentityRole<int>>(sql, new { NormalizedName = normalizedRoleName });
         }
 

@@ -35,11 +35,11 @@ namespace api.Stores
             if (user == null) throw new ArgumentNullException(nameof(user));
             if (string.IsNullOrEmpty(roleName)) throw new ArgumentNullException(nameof(roleName));
 
-            var sql = "Select Id from AspNetRoles where NormalizedName = @NormalizedName";
+            var sql = "Select Id from AspNetRoles where NormalizedName = @NormalizedName;";
             var roleId = await _db.ExecuteScalarAsync<int?>(sql, new { NormalizedName = roleName.ToUpperInvariant() }); //Rolenames are nor
             if (roleId == null) throw new ArgumentException("Role not found.", nameof(roleName));
 
-            var insertSql = "Insert into AspNetUserRoles (UserId, RoleId) Values (@UserId, @RoleId)";
+            var insertSql = "Insert into AspNetUserRoles (UserId, RoleId) Values (@UserId, @RoleId);";
             var result = await _db.ExecuteAsync(insertSql, new { UserId = user.Id, RoleId = roleId });
             return result == 0 ? IdentityResult.Failed(new IdentityError
             {
@@ -81,7 +81,7 @@ namespace api.Stores
             // but here we can implement the logic to delete a user from the database.
             cancellationToken.ThrowIfCancellationRequested();
             if (user == null) throw new ArgumentNullException(nameof(user));
-            var sql = "Delete from AspNetUsers where Id = @Id";
+            var sql = "Delete from AspNetUsers where Id = @Id;";
             var affectedRows = await _db.ExecuteAsync(sql, new { Id = user.Id });
             return affectedRows == 1 ? IdentityResult.Success :
                 IdentityResult.Failed(
@@ -95,7 +95,7 @@ namespace api.Stores
             cancellationToken.ThrowIfCancellationRequested();
             if (string.IsNullOrEmpty(normalizedEmail)) throw new ArgumentNullException(nameof(normalizedEmail));
             // Console.WriteLine($"Finding user by email: {normalizedEmail}");
-            var sql = "Select * from AspNetUsers where NormalizedEmail = @NormalizedEmail";
+            var sql = "Select * from AspNetUsers where NormalizedEmail = @NormalizedEmail;";
             return _db.QuerySingleOrDefaultAsync<User>(sql, new { NormalizedEmail = normalizedEmail });
         }
 
@@ -106,7 +106,7 @@ namespace api.Stores
             {
                 throw new ArgumentException("Invalid user ID.", nameof(userId));
             }
-            var sql = "Select * from AspNetUsers where Id = @Id";
+            var sql = "Select * from AspNetUsers where Id = @Id;";
             return _db.QuerySingleOrDefaultAsync<User>(sql, new { Id = id });
         }
 
@@ -114,7 +114,7 @@ namespace api.Stores
         {
             cancellationToken.ThrowIfCancellationRequested();
             if (string.IsNullOrEmpty(normalizedUserName)) throw new ArgumentNullException(nameof(normalizedUserName));
-            var sql = "Select * from AspNetUsers where NormalizedUserName = @NormalizedUserName";
+            var sql = "Select * from AspNetUsers where NormalizedUserName = @NormalizedUserName;";
             return _db.QuerySingleOrDefaultAsync<User>(sql, new { NormalizedUserName = normalizedUserName });
         }
 
@@ -132,13 +132,13 @@ namespace api.Stores
 
             // This query is used to make it more readable
             var roleId = await _db.ExecuteScalarAsync<int?>(
-                "Select Id from AspNetRoles where NormalizedName = @NormalizedName",
+                "Select Id from AspNetRoles where NormalizedName = @NormalizedName;",
                 new { NormalizedName = roleName.ToUpperInvariant() });
             if (roleId == null)
             {
                 throw new ArgumentException("Role not found.", nameof(roleName));
             }
-            var sql = "Delete from AspNetUserRoles where UserId = @UserId and RoleId = @RoleId";
+            var sql = "Delete from AspNetUserRoles where UserId = @UserId and RoleId = @RoleId;";
             var result = await _db.ExecuteAsync(sql, new
             {
                 UserId = user.Id,
@@ -155,7 +155,7 @@ namespace api.Stores
 
             var sql = "Update AspNetUsers set UserName = @UserName, Name = @Name, NormalizedUserName = @NormalizedUserName, " +
                       "Email = @Email, PasswordHash = @PasswordHash, NormalizedEmail = @NormalizedEmail, SecurityStamp = @SecurityStamp, " +
-                      "ConcurrencyStamp = @ConcurrencyStamp where Id = @Id and (ConcurrencyStamp = @OldConcurrencyStamp or ConcurrencyStamp is null)";
+                      "ConcurrencyStamp = @ConcurrencyStamp where Id = @Id and (ConcurrencyStamp = @OldConcurrencyStamp or ConcurrencyStamp is null);";
 
             var affectedRows = await _db.ExecuteAsync(sql, new
             {

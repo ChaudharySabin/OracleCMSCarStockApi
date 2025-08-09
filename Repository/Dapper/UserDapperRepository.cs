@@ -87,7 +87,7 @@ namespace api.Repository.Dapper
         {
             var sql = "Select " +
                 "u.Id as Id, u.Name as Name, u.Email as Email, u.Phone as Phone, u.DealerId, d.Name as DealerName " +
-                "from AspNetUsers as u Left join Dealers as d on u.DealerId = d.Id";
+                "from AspNetUsers as u Left join Dealers as d on u.DealerId = d.Id;";
             return _db.QueryAsync<User>(sql);
         }
 
@@ -101,7 +101,7 @@ namespace api.Repository.Dapper
         {
             var sql = "Select " +
                 "u.Id as Id, u.Name as Name, u.Email as Email, u.Phone as Phone, u.DealerId, d.Name as DealerName " +
-                "from AspNetUsers as u Left join Dealers as d on u.DealerId = d.Id where u.Id = @Id";
+                "from AspNetUsers as u Left join Dealers as d on u.DealerId = d.Id where u.Id = @Id;";
             return await _db.QuerySingleOrDefaultAsync<User>(sql, new { Id = id });
         }
 
@@ -125,7 +125,7 @@ namespace api.Repository.Dapper
             var newConcurrencyStamp = Guid.NewGuid().ToString("D");
             var sql = "Update AspNetUsers set UserName = @UserName, Name = @Name, NormalizedUserName = @NormalizedUserName, " +
                       "Email = @Email, NormalizedEmail = @NormalizedEmail, Phone = @Phone, PhoneNumber = @PhoneNumber, " +
-                      "ConcurrencyStamp = @NewConcurrencyStamp where Id = @Id and (ConcurrencyStamp = @OldConcurrencyStamp or ConcurrencyStamp is null)";
+                      "ConcurrencyStamp = @NewConcurrencyStamp where Id = @Id and (ConcurrencyStamp = @OldConcurrencyStamp or ConcurrencyStamp is null);";
             var affectedRows = await _db.ExecuteAsync(sql, new
             {
                 Id = id,
@@ -164,7 +164,7 @@ namespace api.Repository.Dapper
             {
                 return (null, null);
             }
-            var dealer = await _db.QuerySingleOrDefaultAsync<Dealer>("Select * from Dealers where Id = @DealerId", new { DealerId = dealerId });
+            var dealer = await _db.QuerySingleOrDefaultAsync<Dealer>("Select * from Dealers where Id = @DealerId;", new { DealerId = dealerId });
             if (dealer == null)
             {
                 return (user, null);
@@ -172,7 +172,7 @@ namespace api.Repository.Dapper
             user.DealerId = dealerId;
             var oldConcurrencyStamp = user.ConcurrencyStamp;
             var newConcurrencyStamp = Guid.NewGuid().ToString("D");
-            var updateSql = "Update AspNetUsers set DealerId = @DealerId, ConcurrencyStamp = @NewConcurrencyStamp where Id = @Id and (ConcurrencyStamp = @OldConcurrencyStamp or ConcurrencyStamp is null)";
+            var updateSql = "Update AspNetUsers set DealerId = @DealerId, ConcurrencyStamp = @NewConcurrencyStamp where Id = @Id and (ConcurrencyStamp = @OldConcurrencyStamp or ConcurrencyStamp is null);";
             var affectedRow = await _db.ExecuteAsync(updateSql, new { DealerId = dealerId, Id = id, NewConcurrencyStamp = newConcurrencyStamp, OldConcurrencyStamp = oldConcurrencyStamp });
             if (affectedRow == 0)
             {

@@ -29,7 +29,7 @@ namespace api.Repository.Dapper
         {
             // Using a left join to include dealer names in the car list
             var car = await _db.QueryAsync<Car>(
-                "Select Cars.Id, Cars.DealerId, Cars.Make, Cars.Model, Cars.Year, Cars.Stock, Dealers.Name as DealerName from Cars left join Dealers on Cars.DealerId = Dealers.Id"
+                "Select Cars.Id, Cars.DealerId, Cars.Make, Cars.Model, Cars.Year, Cars.Stock, Dealers.Name as DealerName from Cars left join Dealers on Cars.DealerId = Dealers.Id;"
             );
             return car.ToList();
         }
@@ -47,7 +47,7 @@ namespace api.Repository.Dapper
             // Using a left join to include dealer names in the car details
             var car = await _db.QuerySingleOrDefaultAsync<Car>(
                 "Select c.Id, c.DealerId, c.Make, c.Model, c.Year, c.Stock, d.Name as DealerName, c.ConcurrencyStamp " +
-                "from Cars as c left join Dealers as d on c.DealerId = d.Id where c.Id= @Id",
+                "from Cars as c left join Dealers as d on c.DealerId = d.Id where c.Id= @Id;",
                 new { Id = id });
             return car;
         }
@@ -58,7 +58,7 @@ namespace api.Repository.Dapper
             // Using a left join to include dealer names in the car details
             var car = await _db.QuerySingleOrDefaultAsync<Car>(
                 "Select c.Id, c.DealerId, c.Make, c.Model, c.Year, c.Stock, d.Name as DealerName, c.ConcurrencyStamp " +
-                "from Cars as c left join Dealers as d on c.DealerId = d.Id where c.Id= @Id and c.DealerId = @DealerId",
+                "from Cars as c left join Dealers as d on c.DealerId = d.Id where c.Id= @Id and c.DealerId = @DealerId;",
                 new { Id = id, DealerId = dealerId });
             return car;
         }
@@ -139,7 +139,7 @@ namespace api.Repository.Dapper
                 return (null, null);
             }
 
-            var dealer = await _db.QuerySingleOrDefaultAsync<Dealer>("Select * from Dealers where Id = @DealerId", new { DealerId = dealerId });
+            var dealer = await _db.QuerySingleOrDefaultAsync<Dealer>("Select * from Dealers where Id = @DealerId;", new { DealerId = dealerId });
             if (dealer == null)
             {
                 return (car, null);

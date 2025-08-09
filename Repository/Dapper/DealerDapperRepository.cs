@@ -59,13 +59,13 @@ namespace api.Repository.Dapper
 
                 var oldConcurrencyStamp = dealer.ConcurrencyStamp;
                 // We are also checking null as ConcurrencyStamp can be null in the database and a simple ConcurrencyStamp = null will never be true 
-                var sql = "Delete from Dealers where Id = @Id and (ConcurrencyStamp = @ConcurrencyStamp or ConcurrencyStamp is null)";
+                var sql = "Delete from Dealers where Id = @Id and (ConcurrencyStamp = @ConcurrencyStamp or ConcurrencyStamp is null);";
                 var affectedRows = await _db.ExecuteAsync(sql, new { Id = id, ConcurrencyStamp = oldConcurrencyStamp });
                 if (affectedRows == 0)
                 {
                     throw new Exception("Something went wrong when deleting the dealer.");
                 }
-                var deleteCarsSql = "Delete from Cars where DealerId = @DealerId";
+                var deleteCarsSql = "Delete from Cars where DealerId = @DealerId;";
                 var result = await _db.ExecuteAsync(deleteCarsSql, new { DealerId = id });
                 if (result == 0)
                 {
@@ -88,7 +88,7 @@ namespace api.Repository.Dapper
         /// <returns>A list of all dealers.</returns>
         public async Task<IEnumerable<Dealer>> GetAllDealersAsync()
         {
-            var sql = "Select Id, Name, Description from Dealers";
+            var sql = "Select Id, Name, Description from Dealers;";
             return await _db.QueryAsync<Dealer>(sql);
         }
 
@@ -99,7 +99,7 @@ namespace api.Repository.Dapper
         /// <returns>The dealer with the specified ID, or null if not found.</returns>
         public async Task<Dealer?> GetDealerByIdAsync(int id)
         {
-            var sql = "Select Id, Name, Description, ConcurrencyStamp from Dealers where Id = @Id";
+            var sql = "Select Id, Name, Description, ConcurrencyStamp from Dealers where Id = @Id;";
             return await _db.QuerySingleOrDefaultAsync<Dealer>(sql, new { Id = id });
         }
 
@@ -121,7 +121,7 @@ namespace api.Repository.Dapper
             var oldConcurrencyStamp = dealer.ConcurrencyStamp;
             var newConcurrencyStamp = Guid.NewGuid().ToString();
             // We are also checking null as ConcurrencyStamp can be null in the database and a simple ConcurrencyStamp = null will never be true 
-            string sql = "Update Dealers set Name=@Name, Description = @description, ConcurrencyStamp = @NewConCurrencyStamp where Id = @Id and (ConcurrencyStamp = @OldConcurrencyStamp or ConcurrencyStamp is null)";
+            string sql = "Update Dealers set Name=@Name, Description = @description, ConcurrencyStamp = @NewConCurrencyStamp where Id = @Id and (ConcurrencyStamp = @OldConcurrencyStamp or ConcurrencyStamp is null);";
             var affectedRows = await _db.ExecuteAsync(sql, new
             {
                 Id = id,
