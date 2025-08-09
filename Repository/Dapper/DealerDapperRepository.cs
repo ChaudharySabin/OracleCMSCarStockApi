@@ -57,13 +57,21 @@ namespace api.Repository.Dapper
             {
                 // Delete all cars associated with the dealer
                 var deleteCarsSql = "Delete from Cars where DealerId = @DealerId;";
-                var result = await _db.ExecuteAsync(deleteCarsSql, new { DealerId = id });
+                var result = await _db.ExecuteAsync(deleteCarsSql, new { DealerId = id }, transaction);
 
+                // Checking if there are any users associated with the dealer
+                var usersSql = "Select count(*) from AspNetUsers where DealerId = @DealerId;";
+                var userCount = await _db.ExecuteScalarAsync<int>(usersSql, new { DealerId = id });
+                if (userCount > 0)
+                {
+                    const string clearUsers = "UPDATE AspNetUsers SET DealerId = NULL WHERE DealerId = @Id;";
+                    await _db.ExecuteAsync(clearUsers, new { Id = id }, transaction);
+                }
 
                 var oldConcurrencyStamp = dealer.ConcurrencyStamp;
                 // We are also checking null as ConcurrencyStamp can be null in the database and a simple ConcurrencyStamp = null will never be true 
                 var sql = "Delete from Dealers where Id = @Id and (ConcurrencyStamp = @ConcurrencyStamp or ConcurrencyStamp is null);";
-                var affectedRows = await _db.ExecuteAsync(sql, new { Id = id, ConcurrencyStamp = oldConcurrencyStamp });
+                var affectedRows = await _db.ExecuteAsync(sql, new { Id = id, ConcurrencyStamp = oldConcurrencyStamp }, transaction);
                 if (affectedRows == 0)
                 {
                     throw new DBConcurrencyException("Dealer was modified or does not exist.");
@@ -73,11 +81,11 @@ namespace api.Repository.Dapper
                 transaction.Commit();
                 return new Dealer { Id = id };
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 transaction.Rollback();
                 // Console.WriteLine(ex.Message);
-                throw new Exception(ex.Message); // This error will be sent to the controller to show server error
+                throw new Exception("Something went wrong when deleting the dealer."); // This error will be sent to the controller to show server error
             }
         }
 
