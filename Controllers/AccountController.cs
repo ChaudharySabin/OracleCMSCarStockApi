@@ -28,6 +28,14 @@ namespace api.Controllers
             _emailSender = emailSender;
         }
 
+        /// <summary>
+        /// Registers a new user.
+        /// This endpoint is for creating a new dealer account.
+        /// It requires the user to provide a username, email, phone, name, and password.
+        /// The user will be assigned the "DEALER" role upon successful registration.
+        /// </summary>
+        /// <param name="registerDto"></param>
+        /// <returns></returns>
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
         {
@@ -75,13 +83,18 @@ namespace api.Controllers
             }
         }
 
-
+        /// <summary>
+        /// Logs in a user.
+        /// Requires the user to provide their email and password.
+        /// </summary>
+        /// <param name="loginDto"> </param>
+        /// <returns> Returns an JWT token if login is successful.</returns>
         [HttpPost("login")]
         public async Task<ActionResult<AuthenticatedUserReturnDto>> Login([FromBody] LoginDto loginDto)
         {
             // Lookup the user first
             var user = await _userManager.FindByEmailAsync(loginDto.Email);
-        
+
             if (user == null)
             {
                 return Unauthorized("Email is incorrect.");
@@ -99,7 +112,11 @@ namespace api.Controllers
             return Ok(user.AuthUserReturnDto(jwtToken));
         }
 
-
+        /// <summary>
+        /// Generates a reset password token for the user.
+        /// </summary>
+        /// <param name="generatedResetPasswordDto">Contains the user's email.</param>
+        /// <returns>Sends an email with the reset password token.</returns>
         [HttpPost("generate-reset-password-token")]
         public async Task<ActionResult<ResetPasswordTokenReturnDto>> GenerateResetPasswordToken([FromBody] GeneratedResetPasswordDto generatedResetPasswordDto)
         {
@@ -131,7 +148,11 @@ namespace api.Controllers
             return Ok("Your Reset Token will be sent in a short time");
         }
 
-
+        /// <summary>
+        /// Resets the user's password using the provided token and new password.
+        /// </summary>
+        /// <param name="resetPasswordDto">Contains the user's email, reset token, password and confirm password</param>
+        /// <returns> Status Code 204 No Content</returns>
         [HttpPost("reset-password")]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto resetPasswordDto)
         {
