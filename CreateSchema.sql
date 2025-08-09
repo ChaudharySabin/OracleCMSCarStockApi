@@ -1,3 +1,5 @@
+CREATE TABLE IF NOT EXISTS sqlite_sequence(name,seq);
+
 CREATE TABLE IF NOT EXISTS Dealers(
     "Id" INTEGER NOT NULL CONSTRAINT "PK_Dealers" PRIMARY KEY AUTOINCREMENT,
     "Name" VARCHAR(255) NOT NULL,
@@ -95,16 +97,16 @@ CREATE TABLE IF NOT EXISTS "AspNetUserTokens" (
 );
 
 -- Indexes
-CREATE INDEX "IX_AspNetRoleClaims_RoleId" ON "AspNetRoleClaims" ("RoleId");
-CREATE INDEX "IX_AspNetUserClaims_UserId" ON "AspNetUserClaims" ("UserId");
-CREATE INDEX "IX_AspNetUserLogins_UserId" ON "AspNetUserLogins" ("UserId");
-CREATE INDEX "IX_AspNetUserRoles_RoleId" ON "AspNetUserRoles" ("RoleId");
-CREATE INDEX "IX_AspNetUsers_DealerId" ON "AspNetUsers" ("DealerId");
+CREATE INDEX IF NOT EXISTS "IX_AspNetRoleClaims_RoleId" ON "AspNetRoleClaims" ("RoleId");
+CREATE INDEX IF NOT EXISTS "IX_AspNetUserClaims_UserId" ON "AspNetUserClaims" ("UserId");
+CREATE INDEX IF NOT EXISTS "IX_AspNetUserLogins_UserId" ON "AspNetUserLogins" ("UserId");
+CREATE INDEX IF NOT EXISTS "IX_AspNetUserRoles_RoleId" ON "AspNetUserRoles" ("RoleId");
+CREATE INDEX IF NOT EXISTS "IX_AspNetUsers_DealerId" ON "AspNetUsers" ("DealerId");
 
 
 -- Unique Constraints
-CREATE UNIQUE INDEX "NonNormalizedRoleNameIndex" ON "AspNetRoles" ("Name");
-CREATE UNIQUE INDEX "RoleNameIndex" ON "AspNetRoles" ("NormalizedName");
-CREATE UNIQUE INDEX "EmailIndex" ON "AspNetUsers" ("NormalizedEmail");
-CREATE UNIQUE INDEX "IX_AspNetUsers_Email" ON "AspNetUsers" ("Email");
-CREATE UNIQUE INDEX "UserNameIndex" ON "AspNetUsers" ("NormalizedUserName");
+CREATE UNIQUE INDEX IF NOT EXISTS "NonNormalizedRoleNameIndex" ON "AspNetRoles" ("Name");
+CREATE UNIQUE INDEX IF NOT EXISTS "RoleNameIndex" ON "AspNetRoles" ("NormalizedName");
+CREATE UNIQUE INDEX IF NOT EXISTS "EmailIndex" ON "AspNetUsers" ("NormalizedEmail");
+CREATE UNIQUE INDEX IF NOT EXISTS "IX_AspNetUsers_Email" ON "AspNetUsers" ("Email");
+CREATE UNIQUE INDEX IF NOT EXISTS "UserNameIndex" ON "AspNetUsers" ("NormalizedUserName");
