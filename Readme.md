@@ -6,7 +6,6 @@ A simple ASP.NET Core Web API for managing car inventory (“stock”) by dealer
 
 - [.NET 9.0 SDK](https://dotnet.microsoft.com/download) (or matching your TargetFramework)
 - Git client
-- (Optional for SQL mode) SQL Server instance
 
 ---
 
@@ -44,11 +43,6 @@ dotnet restore
 dotnet run
 ```
 
-- The In-Memory database is auto-created & seeded with:
-  - 10 dealers & one Dealer user each
-  - 10 cars per dealer
-  - 1 SuperAdmin user
-
 5. **Browse the API**
    Visit http://localhost:5265/swagger (or the HTTPS URL shown).
 
@@ -63,7 +57,9 @@ Password: Password123#
 ## Note
 
 New Registeration will be automatically marked as `Dealer` role but will not be assigned to any dealer.
-Only, SuperAdmin users have the authority to assign users into different dealer
+Only, SuperAdmin users have the authority to assign users into different dealer.
+
+The database will be seeded on startup if there is no any records.
 
 ## Optional
 
